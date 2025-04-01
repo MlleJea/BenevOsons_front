@@ -12,7 +12,7 @@ export default function ConnectionView(props){
             <Card.Header className="text-center">Authentification</Card.Header>
             <Row className="pt-4 ps-3 pe-3">
                 <Col sm={{ offset: 1, span: 10 }} md={3} lg={2}>
-                    <output>Identifiant</output>
+                    <output>Email</output>
                 </Col>
                 <Col sm={{ offset: 1, span: 10 }} md={{ offset: 0, span: 7 }} lg={7}>
                     <InputGroup className="mb-3">
@@ -22,9 +22,9 @@ export default function ConnectionView(props){
                         <Form.Control 
                             type="text"
                             aria-describedby="inpLogin"
-                            placeholder="Veuillez entrer un identifiant"
-                            value={fields.login}
-                            onChange={form => setFields({...fields, login: form.target.value})}
+                            placeholder="Veuillez entrer une adresse mail"
+                            value={fields.email}
+                            onChange={form => setFields({...fields, email: form.target.value})}
                         />
                     </InputGroup>
                 </Col>
@@ -53,14 +53,17 @@ export default function ConnectionView(props){
                     <Nav.Link
                         className="btn bg-black w-100 text-white"
                         as={Link} to="/welcome"
-                        onClick={() => props.authenticate(fields.login, fields.password)}
+                        onClick={() => props.authenticate(fields.email, fields.password)}
                     >
                         Connexion
                     </Nav.Link>
                 </Col>
                 <Col sm={{ offset: 1, span: 10 }} lg={4} className="p-1">
-                    <Nav.Link className="btn bg-black w-100 text-white">
-                        Mot de passe oublié
+                    <Nav.Link 
+                    className="btn bg-black w-100 text-white"
+                    as={Link} to="/register"
+                    >
+                        S'inscrire
                     </Nav.Link>
                 </Col>
             </Row>

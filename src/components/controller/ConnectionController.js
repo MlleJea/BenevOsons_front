@@ -11,11 +11,11 @@ export default function ConnectionController() {
 
     const [, setUser] = useContext(myContext)
 
-    function authenticate(login, password) {
+    function authenticate(email, password) {
         const requestOptions = {
             method: "POST",
             headers: { "Content-type": "application/json" },
-            body: JSON.stringify({ login: login, password: password })
+            body: JSON.stringify({ email: email, password: password })
         }
 
         fetch(`${backUrl}/authenticate`, requestOptions)
@@ -29,6 +29,6 @@ export default function ConnectionController() {
     }
 
     return (
-        <ConnectionView authenticate={(login,password) => authenticate(login,password)}/>
+        <ConnectionView authenticate={(email,password) => authenticate(email,password)}/>
     );
 }

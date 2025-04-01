@@ -1,12 +1,15 @@
-body { font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif; }
+body {
+    color: rgba(0, 0, 0, .5);; 
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif; }
 
-header { height: 5rem; background-color: #F8F5F0; }
-header > h1 { font-weight: bolder; font-size: 2.4rem; margin: 0; }
-footer { height: 3rem; background-color: #F8F5F0; }
-footer > h6 { font-size: 1.2rem; margin: 0; }
+header { height: 5rem; background-color: rgba(255, 204, 0, 1); }
+header > h1 { font-weight: bolder; font-size: 2.4rem; margin: 0; color: rgb(97, 96, 96);}
+footer { height: 3rem; background-color: rgba(255, 204, 0, 1); }
+footer > h6 { font-size: 1.2rem; margin: 0;color: rgb(97, 96, 96); }
 article { min-height: calc(100vh - 14.4rem); }
 
 a:hover { color: goldenrod;}
+
 
 .panel { background-color: #F8F5F0; }
 .text-goldenrod { color: goldenrod;}
@@ -15,3 +18,39 @@ a:hover { color: goldenrod;}
 .h-content { height: fit-content; }
 .navbar-nav { flex-direction: unset; }
 .max-width-50-rem { max-width: 50rem; }
+
+
+/* navbar style */
+.navbar-icon{color: rgba(245, 245, 245, 1) !important;}
+
+.navbar-dark .nav-link {
+    color: rgba(245, 245, 245, 1) !important;
+    margin: 2px;
+}
+.navbar {background-color: rgba(245, 245, 245, 1) !important;}
+
+.navbar-brand{color:rgba(255, 204, 0, 1)  !important;}
+.navbar-toggler-icon {background-color: rgba(255, 204, 0, 1)  !important;}
+
+/* icon style*/
+.heart-icon{
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    align-self: baseline;
+}
+.fa{
+    color:rgba(255, 204, 0, 1);
+}
+
+/* button style */
+button:hover{color:rgb(97, 96, 96) !important;}
+button{
+    background-color:rgba(255, 204, 0, 1) !important;
+    color: rgba(245, 245, 245, 1) !important;
+    border: rgba(255, 204, 0, 1) !important;
+}
+
+/* form style */
+.nav-link {background-color: rgba(255, 204, 0, 1) !important;}
+

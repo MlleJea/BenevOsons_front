@@ -3,7 +3,7 @@ import { Row,Col,Card,InputGroup,Form,Nav,Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
 
-export default function RegisterView() {
+export default function RegisterView(props) {
   const [userType, setUserType] = useState(null); 
   const [fields, setFields] = useState({
     email: "",
@@ -24,13 +24,17 @@ export default function RegisterView() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    if (name.startsWith("adress.")) {
-      const addressField = name.split(".")[1];
-      setFields({ ...fields, adress: { ...fields.adress, [addressField]: value } });
-    } else {
-      setFields({ ...fields, [name]: value });
-    }
+  
+    setFields((prevFields) => {
+      if (name.startsWith("adress.")) {
+        const addressField = name.split(".")[1];
+        return {
+          ...prevFields,
+          adress: { ...prevFields.adress, [addressField]: value || "" },
+        };
+      }
+      return { ...prevFields, [name]: value || "" };
+    });
   };
 
   return (
@@ -41,12 +45,12 @@ export default function RegisterView() {
         {/* Button setting the UserType*/}
         <Row className="text-center p-3">
           <Col>
-            <Button variant={userType === "volunteer" ? "primary" : "outline-primary"} onClick={() => setUserType("volunteer")}>
+            <Button variant={userType === "volunteer" ? "primary" : "outline-primary"} onClick={() => {setUserType("volunteer"); setFields(prevFields => ({ ...prevFields, roleName: "VOLUNTEER" }))}}>
               Je suis Bénévole
             </Button>
           </Col>
           <Col>
-            <Button variant={userType === "organization" ? "primary" : "outline-primary"} onClick={() => setUserType("organization")}>
+            <Button variant={userType === "organization" ? "primary" : "outline-primary"} onClick={() => {setUserType("organization"); setFields(prevFields => ({ ...prevFields, roleName: "ORGANIZATION" })) }}>
               Je suis une Association
             </Button>
           </Col>
@@ -166,13 +170,18 @@ export default function RegisterView() {
             {/* Validation */}
             <Row className="pb-3 ps-3 pe-3">
               <Col className="text-center">
-                <Button variant="success" onClick={() => console.log(fields)}>
-                  S'inscrire
-                </Button>
+                <Nav.Link
+                     className="btn bg-black w-100 text-white"
+                    as={Link} to="/welcome"
+                    onClick={() => props.register(fields)}
+                     >
+                    Inscription
+                </Nav.Link>
               </Col>
             </Row>
           </>
         )}
+
       </Card>
     </Row>
   );

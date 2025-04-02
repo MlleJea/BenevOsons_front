@@ -6,7 +6,9 @@ import RegisterView from "../view/RegisterView";
 import { myContext } from "../../index";
 
 export default function RegisterController() {
-    const backUrl = `${getBackUrl()}/api`; 
+
+    const backUrl = `${getBackUrl()}/security`; 
+
     const [, setUser] = useContext(myContext);
     const navigate = useNavigate();
 

@@ -11,31 +11,40 @@ export default function RegisterView(props) {
     phoneNumber: "",
     roleName: "",
     name: "",
-    firstName: "",
     birthDate: "",
-    adress: {
+    adressList: [{
       streetNumber: "",
       streetName: "",
-      streetType: "",
       postalCode: "",
       city: "",
-    },
+    },]
   });
 
+ 
   const handleChange = (e) => {
     const { name, value } = e.target;
   
-    setFields((prevFields) => {
-      if (name.startsWith("adress.")) {
-        const addressField = name.split(".")[1];
+    if (name.startsWith("adressList.")) {
+      const addressField = name.split(".")[1];
+      return setFields((prevFields) => {
+        const updatedadressList = [...prevFields.adressList];
+        updatedadressList[0] = {
+          ...updatedadressList[0],
+          [addressField]: value || "",
+        };
         return {
           ...prevFields,
-          adress: { ...prevFields.adress, [addressField]: value || "" },
+          adressList: updatedadressList,
         };
-      }
-      return { ...prevFields, [name]: value || "" };
-    });
+      });
+    }
+  
+    setFields((prevFields) => ({
+      ...prevFields,
+      [name]: value || "",
+    }));
   };
+  
 
   return (
     <Row className="d-flex justify-content-center p-3 pt-5">
@@ -99,16 +108,6 @@ export default function RegisterView(props) {
             {/* Volonteer fields */}
             {userType === "volunteer" && (
               <>
-
-                <Row className="ps-3 pe-3">
-                  <Col sm={3}><output>Prénom</output></Col>
-                  <Col sm={7}>
-                  <InputGroup className="mb-3">
-                    <Form.Control type="text" name="firstName" placeholder="Prénom" value={fields.firstName} onChange={handleChange} />
-                    </InputGroup>
-                  </Col>
-                </Row>
-
                 <Row className="ps-3 pe-3">
                   <Col sm={3}><output>Date de naissance</output></Col>
                   <Col sm={7}>
@@ -125,16 +124,7 @@ export default function RegisterView(props) {
               <Col sm={3}><output>Numéro de rue</output></Col>
               <Col sm={7}>
               <InputGroup className="mb-3">
-                <Form.Control type="text" name="adress.streetNumber" placeholder="N°" value={fields.adress.streetNumber} onChange={handleChange} />
-              </InputGroup>
-              </Col>
-            </Row>
-
-            <Row className="ps-3 pe-3">
-              <Col sm={3}><output>Type de voie</output></Col>
-              <Col sm={7}>
-              <InputGroup className="mb-3">
-                <Form.Control type="text" name="adress.streetType" placeholder="Ex: Avenue, Boulevard" value={fields.adress.streetType} onChange={handleChange} />
+                <Form.Control type="text" name="adressList.streetNumber" placeholder="N°" value={fields.adressList[0].streetNumber} onChange={handleChange} />
               </InputGroup>
               </Col>
             </Row>
@@ -143,7 +133,7 @@ export default function RegisterView(props) {
               <Col sm={3}><output>Nom de la rue</output></Col>
               <Col sm={7}>
               <InputGroup className="mb-3">
-                <Form.Control type="text" name="adress.streetName" placeholder="Nom de la rue" value={fields.adress.streetName} onChange={handleChange} />
+                <Form.Control type="text" name="adressList.streetName" placeholder="Nom de la rue" value={fields.adressList[0].streetName} onChange={handleChange} />
               </InputGroup>
               </Col>
             </Row>
@@ -153,7 +143,7 @@ export default function RegisterView(props) {
               <Col sm={3}><output>Code Postal</output></Col>
               <Col sm={7}>
               <InputGroup className="mb-3">
-                <Form.Control type="text" name="adress.postalCode" placeholder="Code postal" value={fields.adress.postalCode} onChange={handleChange} />
+                <Form.Control type="text" name="adressList.postalCode" placeholder="Code postal" value={fields.adressList[0].postalCode} onChange={handleChange} />
               </InputGroup>
               </Col>
             </Row>
@@ -162,7 +152,7 @@ export default function RegisterView(props) {
               <Col sm={3}><output>Ville</output></Col>
               <Col sm={7}>
               <InputGroup className="mb-3">
-                <Form.Control type="text" name="adress.city" placeholder="Ville" value={fields.adress.city} onChange={handleChange} />
+                <Form.Control type="text" name="adressList.city" placeholder="Ville" value={fields.adressList[0].city} onChange={handleChange} />
               </InputGroup>
               </Col>
             </Row>

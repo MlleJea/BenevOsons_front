@@ -21,7 +21,7 @@ export default function App() {
   return (
     <myContext.Provider value={[user, setUser]}>
       <header className="d-flex justify-content-center align-items-center">
-        <h1>Benev <img src={heartIcon} alt="heart" className="heart-icon"/> sons</h1>
+        <h1>Benev</h1> <h1 className="pink">O</h1> <h1>sons</h1><h1 className="p-2"></h1><img src={heartIcon} alt="heart" className="heart-icon"/>
       </header>
 
       <BrowserRouter>

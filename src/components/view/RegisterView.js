@@ -4,14 +4,17 @@ import { Link } from "react-router-dom";
 
 
 export default function RegisterView(props) {
-  const [userType, setUserType] = useState(null); 
+  const [userType,setUserType] = useState(null);
+
   const [fields, setFields] = useState({
     email: "",
     password: "",
+    confirmationPassword: "",
     phoneNumber: "",
     roleName: "",
     name: "",
     birthDate: "",
+    rna: "",
     adressList: [{
       streetNumber: "",
       streetName: "",
@@ -87,6 +90,16 @@ export default function RegisterView(props) {
               </Col>
             </Row>
             <Row className="ps-3 pe-3">
+              <Col sm={3}><output>Confirmez votre mot de passe</output></Col>
+              <Col sm={7}>
+                <InputGroup className="mb-3">
+                  <InputGroup.Text><i className="fa fa-key"></i></InputGroup.Text>
+                  <Form.Control type="password" name="confirmationPassword" placeholder="Votre mot de passe" value={fields.confirmationPassword} onChange={handleChange} />
+                </InputGroup>
+              </Col>
+            </Row>
+
+            <Row className="ps-3 pe-3">
               <Col sm={3}><output>Numéro de téléphone</output></Col>
               <Col sm={7}>
               <InputGroup className="mb-3">
@@ -113,6 +126,20 @@ export default function RegisterView(props) {
                   <Col sm={7}>
                   <InputGroup className="mb-3">
                     <Form.Control type="date" name="birthDate" value={fields.birthDate} onChange={handleChange} />
+                  </InputGroup>
+                  </Col>
+                </Row>
+              </>
+            )}
+
+            {/* Organization fields */}
+            {userType === "organization" && (
+              <>
+                <Row className="ps-3 pe-3">
+                  <Col sm={3}><output>RNA</output></Col>
+                  <Col sm={7}>
+                  <InputGroup className="mb-3">
+                    <Form.Control type="text" name="rna" placeholder="N°" value={fields.rna} onChange={handleChange} />
                   </InputGroup>
                   </Col>
                 </Row>

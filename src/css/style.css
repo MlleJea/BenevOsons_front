@@ -10,6 +10,10 @@ article { min-height: calc(100vh - 14.4rem); }
 
 a:hover { color: goldenrod;}
 
+.pink {
+    color: rgb(229, 112, 132);
+}
+
 
 .panel { background-color: #F8F5F0; }
 .text-goldenrod { color: goldenrod;}
@@ -37,7 +41,7 @@ a:hover { color: goldenrod;}
     width: 50px;
     height: 50px;
     object-fit: contain;
-    align-self: baseline;
+    align-self: center;
 }
 .fa{
     color:rgba(255, 204, 0, 1);

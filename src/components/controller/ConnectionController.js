@@ -20,7 +20,10 @@ export default function ConnectionController() {
 
         fetch(`${backUrl}/authenticate`, requestOptions)
             .then(response => response.ok ? response.json() : Promise.reject(response))
-            .then(json => setUser(json))
+            .then(json => {
+                setUser(json)
+                console.log("Connection réussie :", json)
+            })
             .catch(response => {
                 console.error(
                     "Une erreur s'est produite lors de l'authentification",

@@ -58,3 +58,6 @@ button{
 /* form style */
 .nav-link {background-color: rgba(255, 204, 0, 1) !important;}
 
+.badge {
+    background-color: rgba(255, 204, 0, 1) !important ;
+}

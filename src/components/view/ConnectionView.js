@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 export default function ConnectionView(props){
 
-   const [fields, setFields] = useState({login : "", password : ""})
+   const [fields, setFields] = useState({email : "", password : ""})
 
     return(
         <Row className="d-flex justify-content-center p-3 pt-5">

@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react"; // Importez useEffect
 import { Row, Col, Card, Form, Button, Toast, ToastContainer } from "react-bootstrap";
 
-export default function SpaceView({ user, role, updateUser, skillTypes = [], grades = [] }) {
+export default function SpaceView({ user, role, updateUser, addSkill, skillTypes = [], grades = [], id, skills = [] }) {
     if (!user) {
         return <div>Chargement des données utilisateur...</div>;
     }
@@ -68,29 +68,43 @@ export default function SpaceView({ user, role, updateUser, skillTypes = [], gra
 
     // Skills
     const [newSkill, setNewSkill] = useState({
-        typeSkill: "",
-        skillLabel: "",
+        labelSkill: "",
         grade: "",
+        skillTypeLabel: "",
+        volunteerId: id,
     });
 
-    const [localSkills, setLocalSkills] = useState(user.skills || []);
+    const [displayedSkills, setDisplayedSkills] = useState(skills || []);
+
+    useEffect(() => {
+        setDisplayedSkills(skills || []);
+    }, [skills]);
 
     const handleSkillChange = (e) => {
         const { name, value } = e.target;
-        setNewSkill((prev) => ({ ...prev, [name]: value }));
+        setNewSkill(prev => ({
+            ...prev,
+            [name]: value
+        }));
     };
 
+
     const handleAddSkill = () => {
-        if (!newSkill.typeSkill || !newSkill.skillLabel || !newSkill.grade) {
+        if (!newSkill.skillTypeLabel || !newSkill.labelSkill || !newSkill.grade) {
             showNotification("Tous les champs de compétence sont requis", "warning");
             return;
         }
+        setDisplayedSkills(prevSkills => [...prevSkills, newSkill]);
 
-        const updatedSkills = [...localSkills, newSkill];
-        setLocalSkills(updatedSkills);
-        updateUser({ skills: updatedSkills });
+        addSkill(newSkill);
 
-        setNewSkill({ typeSkill: "", skillLabel: "", grade: "" });
+
+        setNewSkill({
+            labelSkill: "",
+            grade: "",
+            skillTypeLabel: "",
+            volunteerId: user.id
+        });
         showNotification("Compétence ajoutée");
     };
 
@@ -180,12 +194,13 @@ export default function SpaceView({ user, role, updateUser, skillTypes = [], gra
                     <Card className="p-4 w-50">
                         <Card.Header className="text-center">Mes compétences</Card.Header>
                         <Card.Body>
-                            {localSkills.length > 0 ? (
+                            {displayedSkills.length > 0 ? (
                                 <ul className="list-group mb-3">
-                                    {localSkills.map((skill, idx) => (
+                                    {displayedSkills.map((skill, idx) => (
                                         <li key={idx} className="list-group-item d-flex justify-content-between align-items-center">
                                             <div>
-                                                <strong>{skill.skillLabel}</strong>
+                                                <strong>{skill.skillType?.label || skill.skillTypeLabel} : </strong>
+                                                <>{skill.labelSkill}</>
                                             </div>
                                             <span className="badge bg-primary rounded-pill">{skill.grade}</span>
                                         </li>
@@ -195,26 +210,28 @@ export default function SpaceView({ user, role, updateUser, skillTypes = [], gra
                                 <p className="text-center text-muted">Aucune compétence ajoutée</p>
                             )}
 
+                            <div>Ajouter une compétence</div>
                             <Form.Group className="mb-3">
-                            <Form.Select
-                                name="typeSkill"
-                                value={newSkill.typeSkill}
-                                onChange={handleSkillChange}
-                            >
-                                <option value="">Choisir un type</option>
-                                {skillTypes.map((skill, id) => (
-                                    <option key={id} value={skill.idSkillType}>{skill.label}</option>
-                                ))}
-                            </Form.Select>
-
+                                <Form.Select
+                                    name="skillTypeLabel"
+                                    value={newSkill.skillTypeLabel}
+                                    onChange={handleSkillChange}
+                                >
+                                    <option value="">Choisir un type</option>
+                                    {skillTypes.map((skillType, index) => (
+                                        <option key={index} value={skillType.label}>
+                                            {skillType.label}
+                                        </option>
+                                    ))}
+                                </Form.Select>
                             </Form.Group>
 
                             <Form.Group className="mb-3">
                                 <Form.Label>Libellé</Form.Label>
                                 <Form.Control
                                     type="text"
-                                    name="skillLabel"
-                                    value={newSkill.skillLabel}
+                                    name="labelSkill"
+                                    value={newSkill.labelSkill}
                                     onChange={handleSkillChange}
                                 />
                             </Form.Group>
@@ -227,8 +244,8 @@ export default function SpaceView({ user, role, updateUser, skillTypes = [], gra
                                     onChange={handleSkillChange}
                                 >
                                     <option value="">Choisir un niveau</option>
-                                    {grades.map((grade,id) => (
-                                        <option key={id} value={grade}>{grade}</option>
+                                    {grades.map((grade, index) => (
+                                        <option key={index} value={grade}>{grade}</option>
                                     ))}
                                 </Form.Select>
                             </Form.Group>

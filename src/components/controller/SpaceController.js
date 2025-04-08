@@ -31,12 +31,13 @@ export default function SpaceController() {
                 setUserToDisplay(userData);
 
                 // 2. Skills if volunteer
-                if (userData.role === "volunteer") {
+                if (role === "VOLUNTEER") {
                     const skillRes = await fetch(`${backUrl}/space/displaySkill/${id}`, {
                         headers: { Authorization: `Bearer ${token}` },
                     });
                     if (skillRes.ok) {
                         const skills = await skillRes.json();
+                        console.log(skills);
                         setSkillToDisplay(skills);
                     }
                 }
@@ -128,6 +129,7 @@ export default function SpaceController() {
             addSkill={addSkill}
             skillTypes={skillTypes}
             grades={grades}
+            id={id}
         />
     );
 }

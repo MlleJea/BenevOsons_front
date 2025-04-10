@@ -14,6 +14,9 @@ export default function SpaceView({ user, role, updateUser, addSkill, skillTypes
         return <div>Chargement des données utilisateur...</div>;
     }
 
+      const [errors, setErrors] = useState({});
+    
+
     const firstAddress = user.userAdressList?.[0] || {};
 
     const [profilFields, setProfilFields] = useState({

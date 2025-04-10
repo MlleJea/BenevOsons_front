@@ -62,6 +62,22 @@ export const validateEmail = (email, maxLength = 250) => {
     if (!date) {
       return `${fieldName} est requise.`;
     }
+  
+    const birthDate = new Date(date);
+    const today = new Date();
+  
+    const ageDiff = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    const dayDiff = today.getDate() - birthDate.getDate();
+  
+    const is18OrOlder =
+      ageDiff > 18 ||
+      (ageDiff === 18 && (monthDiff > 0 || (monthDiff === 0 && dayDiff >= 0)));
+  
+    if (!is18OrOlder) {
+      return "Vous devez avoir au moins 18 ans pour vous inscrire.";
+    }
+  
     return null;
   };
   

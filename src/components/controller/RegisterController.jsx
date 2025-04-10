@@ -1,9 +1,12 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 
 import { useNavigate } from "react-router-dom";
 import { getBackUrl } from "../controller/backUrl";
 import RegisterView from "../view/RegisterView";
 import { myContext } from "../../index";
+
+import PopupModal from "../../utils/PopupModal";
+
 
 export default function RegisterController() {
 
@@ -11,6 +14,9 @@ export default function RegisterController() {
 
     const [, setUser] = useContext(myContext);
     const navigate = useNavigate();
+
+    const [showModal, setShowModal] = useState(false);
+    const [message, setMessage] = useState("");
 
     function register(fields) {
         const requestOptions = {
@@ -24,15 +30,30 @@ export default function RegisterController() {
             .then(json => {
                 setUser(json); 
                 console.log("Inscription réussie :", json);
-                navigate("/welcome"); 
+                setMessage("Inscription réussie, bienvenue sur BenevOsons !");
+                setShowModal(true);
+                console.log(showModal);
             })
             .catch(response => {
                 console.error(
                     "Une erreur s'est produite lors de l'inscription",
                     `${response.status} ${response.statusText}`
                 );
+                setMessage(`${response.statusText}`);
+                setShowModal(true);
             });
     }
+    const handleCloseModal = () => {
+        setShowModal(false);
+        navigate("/welcome")
+    }
 
-    return <RegisterView register={register} />;
+    return(
+        <>
+            <RegisterView register={register} />
+            {showModal && (
+                <PopupModal message={message} onClose={handleCloseModal} />
+            )}
+        </>
+    );
 }

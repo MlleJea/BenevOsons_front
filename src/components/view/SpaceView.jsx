@@ -1,5 +1,13 @@
-import React, { useState, useEffect } from "react"; // Importez useEffect
-import { Row, Col, Card, Form, Button, Toast, ToastContainer } from "react-bootstrap";
+import React, { useState, useEffect } from "react";
+import { Row, Col, Card, Form, Button } from "react-bootstrap";
+
+import { 
+    validatePassword, 
+    validateConfirmPassword, 
+    validateFrenchPhone,
+    validateRequiredText, 
+    validateAddress
+  } from "../../utils/validationUtils";
 
 export default function SpaceView({ user, role, updateUser, addSkill, skillTypes = [], grades = [], id, skills = [] }) {
     if (!user) {
@@ -20,16 +28,6 @@ export default function SpaceView({ user, role, updateUser, addSkill, skillTypes
         },
     });
 
-    const [showToast, setShowToast] = useState(false);
-    const [toastMessage, setToastMessage] = useState("");
-    const [toastVariant, setToastVariant] = useState("success");
-
-    const showNotification = (message, variant = "success") => {
-        setToastMessage(message);
-        setToastVariant(variant);
-        setShowToast(true);
-    };
-
     const handleChange = (e) => {
         const { name, value } = e.target;
 
@@ -49,7 +47,7 @@ export default function SpaceView({ user, role, updateUser, addSkill, skillTypes
 
     const handleProfileSubmit = () => {
         if (profilFields.password && profilFields.password !== profilFields.passwordConfirmation) {
-            showNotification("Les mots de passe ne correspondent pas", "danger");
+        
             return;
         }
 
@@ -63,7 +61,6 @@ export default function SpaceView({ user, role, updateUser, addSkill, skillTypes
         }
 
         updateUser(dataToUpdate);
-        showNotification("Informations mises à jour avec succès");
     };
 
     // Skills
@@ -91,7 +88,6 @@ export default function SpaceView({ user, role, updateUser, addSkill, skillTypes
 
     const handleAddSkill = () => {
         if (!newSkill.skillTypeLabel || !newSkill.labelSkill || !newSkill.grade) {
-            showNotification("Tous les champs de compétence sont requis", "warning");
             return;
         }
         setDisplayedSkills(prevSkills => [...prevSkills, newSkill]);
@@ -105,22 +101,10 @@ export default function SpaceView({ user, role, updateUser, addSkill, skillTypes
             skillTypeLabel: "",
             volunteerId: user.id
         });
-        showNotification("Compétence ajoutée");
     };
 
     return (
         <>
-            <ToastContainer position="top-end" className="p-3">
-                <Toast show={showToast} onClose={() => setShowToast(false)} delay={3000} autohide bg={toastVariant}>
-                    <Toast.Header>
-                        <strong className="me-auto">Notification</strong>
-                    </Toast.Header>
-                    <Toast.Body className={toastVariant === "danger" ? "text-white" : ""}>
-                        {toastMessage}
-                    </Toast.Body>
-                </Toast>
-            </ToastContainer>
-
             <Row className="justify-content-center p-4">
                 <Card className="p-4 w-50 mb-4">
                     <Card.Header className="text-center">Mes informations</Card.Header>

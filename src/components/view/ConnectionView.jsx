@@ -51,7 +51,7 @@ export default function ConnectionView(props){
             <Row className="pb-3 ps-3 pe-3">
                 <Col sm={{ offset: 1, span: 10 }} lg={4} className="p-1">
                     <Nav.Link
-                        className="btn bg-black w-100 text-white"
+                        className="btn  w-100 text-white"
                         as={Link} to="/welcome"
                         onClick={() => props.authenticate(fields.email, fields.password)}
                     >
@@ -60,7 +60,7 @@ export default function ConnectionView(props){
                 </Col>
                 <Col sm={{ offset: 1, span: 10 }} lg={4} className="p-1">
                     <Nav.Link 
-                    className="btn bg-black w-100 text-white"
+                    className="btn w-100 text-white"
                     as={Link} to="/register"
                     >
                         S'inscrire

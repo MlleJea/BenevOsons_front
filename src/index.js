@@ -6,6 +6,7 @@ import { createRoot } from 'react-dom/client';
 import "./css/cosmo.min.css"
 import "./css/style.css"
 import "./css/fontawesome.all.min.css"
+import { BrowserRouter } from "react-router-dom";
 
 export const myContext = createContext();
 
@@ -13,6 +14,8 @@ const root = createRoot(document.getElementById('root'));
 
 root.render(
     <React.StrictMode>
-        <App/>
+        <BrowserRouter>
+            <App/>
+        </BrowserRouter>
     </React.StrictMode>
 );

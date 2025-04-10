@@ -5,24 +5,24 @@ import SpaceView from "../view/SpaceView";
 import { myContext } from "../../index";
 
 export default function SpaceController() {
+    const [contextUser] = useContext(myContext);
+    const navigate = useNavigate();
     const backUrl = getBackUrl();
-    const [user, setUser] = useContext(myContext);
 
     const [userToDisplay, setUserToDisplay] = useState(null);
     const [skillToDisplay, setSkillToDisplay] = useState(null);
     const [skillTypes, setSkillTypes] = useState([]);
     const [grades, setGrades] = useState([]);
 
-    const navigate = useNavigate();
 
-    const id = user.id;
-    const token = user.token;
-    const role = user.role;
+    const id = contextUser.id;
+    const token = contextUser.token;
+    const role = contextUser.role;
 
     useEffect(() => {
         const fetchAllData = async () => {
             try {
-                // User
+                // 1. User
                 const userRes = await fetch(`${backUrl}/space/display/${id}`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
@@ -30,20 +30,19 @@ export default function SpaceController() {
                 const userData = await userRes.json();
                 setUserToDisplay(userData);
 
-                // 2. Skills if volunteer
+                // 2. Skills
                 if (role === "VOLUNTEER") {
                     const skillRes = await fetch(`${backUrl}/space/displaySkill/${id}`, {
                         headers: { Authorization: `Bearer ${token}` },
                     });
                     if (skillRes.ok) {
                         const skills = await skillRes.json();
-                        console.log(skills);
                         setSkillToDisplay(skills);
                     }
                 }
 
                 // 3. Skill types
-                const typesRes = await fetch(`${backUrl}/space/displaySkillTypes`, {
+                const typesRes = await fetch(`${backUrl}/referentiel/displaySkillTypes`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 if (typesRes.ok) {
@@ -52,21 +51,20 @@ export default function SpaceController() {
                 }
 
                 // 4. Grades
-                const gradesRes = await fetch(`${backUrl}/space/displayGrades`, {
+                const gradesRes = await fetch(`${backUrl}/referentiel/displayGrades`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 if (gradesRes.ok) {
                     const gradeList = await gradesRes.json();
                     setGrades(gradeList);
                 }
-
             } catch (err) {
                 console.error("Erreur lors du chargement des données :", err);
             }
         };
 
         fetchAllData();
-    }, [id, token, navigate]);
+    }, [id, token, role, backUrl]);
 
     const updateUser = (updatedFields) => {
         setUserToDisplay(prev => ({ ...prev, ...updatedFields }));
@@ -86,7 +84,6 @@ export default function SpaceController() {
                 return response.json();
             })
             .then(json => {
-                setUser(prev => ({ ...prev, ...json }));
                 return { success: true, message: "Modifications enregistrées", data: json };
             })
             .catch(error => {
@@ -123,7 +120,7 @@ export default function SpaceController() {
     return (
         <SpaceView
             user={userToDisplay}
-            role = {user.role}
+            role={role}
             updateUser={updateUser}
             skills={skillToDisplay}
             addSkill={addSkill}

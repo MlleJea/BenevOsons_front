@@ -28,6 +28,7 @@ export default function SpaceController() {
                 });
                 if (!userRes.ok) throw new Error("Erreur lors de la récupération de l'utilisateur");
                 const userData = await userRes.json();
+                console.log(userData);
                 setUserToDisplay(userData);
 
                 // 2. Skills

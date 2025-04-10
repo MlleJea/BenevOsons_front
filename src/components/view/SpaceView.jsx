@@ -116,7 +116,7 @@ export default function SpaceView({ user, role, updateUser, addSkill, skillTypes
                         <Row className="mb-3"><Col><strong>Nom:</strong> {user.name}</Col></Row>
 
                         {role === "VOLUNTEER" && (
-                            <Row className="mb-3"><Col><strong>Date de naissance:</strong> {user.birthDate}</Col></Row>
+                            <Row className="mb-3"><Col><strong>Date de naissance:</strong> {user.birthdate}</Col></Row>
                         )}
                         {role === "ORGANIZATION" && (
                             <Row className="mb-3"><Col><strong>RNA:</strong> {user.rna}</Col></Row>
@@ -189,7 +189,7 @@ export default function SpaceView({ user, role, updateUser, addSkill, skillTypes
                                                 <strong>{skill.skillType?.label || skill.skillTypeLabel} : </strong>
                                                 <>{skill.labelSkill}</>
                                             </div>
-                                            <span className="badge bg-primary rounded-pill">{skill.grade}</span>
+                                            <span className="badge rounded-pill">{skill.grade}</span>
                                         </li>
                                     ))}
                                 </ul>

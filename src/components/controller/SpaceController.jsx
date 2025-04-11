@@ -94,6 +94,7 @@ export default function SpaceController() {
     };
 
     const addSkill = (skillToAdd) => {
+        console.log(skillToAdd);
         const requestOptionAddSkill = {
             method: "POST",
             headers: {

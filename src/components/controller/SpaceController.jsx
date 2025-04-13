@@ -104,7 +104,7 @@ export default function SpaceController() {
             body: JSON.stringify(skillToAdd),
         };
 
-        return fetch(`${backUrl}/space/addSkill`, requestOptionAddSkill)
+        return fetch(`${backUrl}/space/addSkill${id}`, requestOptionAddSkill)
             .then(response => {
                 if (!response.ok) throw new Error(`Erreur HTTP ${response.status}`);
                 return response.json();

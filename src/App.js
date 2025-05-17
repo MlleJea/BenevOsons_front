@@ -2,6 +2,7 @@ import React, { useState, useContext } from "react";
 import { Container, Nav, Navbar } from "react-bootstrap";
 import { Routes, Route, Link, useNavigate } from "react-router-dom";
 import heartIcon from "/public/pictures/heart-icon.png";
+import LogoutButton from "@components/LogoutButton";
 
 import { myContext } from "./index";
 
@@ -91,19 +92,9 @@ export default function App() {
                 <i className="fa fa-search me-2 navbar-icon"></i>
                 Recherche
               </Nav.Link>
-              <Nav.Link
-                as={Link}
-                eventKey="5"
-                to="/welcome"
-                hidden={user === null}
-                onClick={() => {
-                  setUser(null);
-                  navigate("/welcome");
-                }}
-              >
-                <i className="fa fa-unlock me-2 navbar-icon"></i>
-                Déconnexion
-              </Nav.Link>
+
+              {user !== null && <LogoutButton />}
+
             </Nav>
           </Navbar.Collapse>
           <Navbar.Brand className="fst-italic">{userName()}</Navbar.Brand>

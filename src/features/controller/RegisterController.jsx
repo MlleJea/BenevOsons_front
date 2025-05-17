@@ -1,54 +1,54 @@
 import React, { useContext, useState } from "react";
-
 import { useNavigate } from "react-router-dom";
-import { getBackUrl } from "@utils/backUrl";
+
 import RegisterView from "@view/RegisterView";
 import { myContext } from "../../index";
-
 import PopupModal from "@components/PopupModal";
-
+import { getBackUrl } from "@utils/backUrl";
 
 export default function RegisterController() {
-
-    const backUrl = `${getBackUrl()}/security`; 
-
+    const backUrl = `${getBackUrl()}/security`;
     const [, setUser] = useContext(myContext);
     const navigate = useNavigate();
 
     const [showModal, setShowModal] = useState(false);
     const [message, setMessage] = useState("");
+    const [success, setSuccess] = useState(false);
 
-    function register(fields) {
-        const requestOptions = {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(fields),
-        };
-
-        fetch(`${backUrl}/register`, requestOptions)
-            .then(response => response.ok ? response.json() : Promise.reject(response))
-            .then(json => {
-                setUser(json); 
-                console.log("Inscription réussie :", json);
-                setMessage("Inscription réussie, bienvenue sur BenevOsons !");
-                setShowModal(true);
-                console.log(showModal);
-            })
-            .catch(response => {
-                console.error(
-                    "Une erreur s'est produite lors de l'inscription",
-                    `${response.status} ${response.statusText}`
-                );
-                setMessage(`${response.statusText}`);
-                setShowModal(true);
+    async function register(fields) {
+        try {
+            const response = await fetch(`${backUrl}/register`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(fields),
             });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data?.message || "Erreur lors de l'inscription.");
+            }
+
+            setUser(data);
+            setMessage("Inscription réussie, bienvenue sur BenevOsons !");
+            setSuccess(true);
+            setShowModal(true);
+        } catch (err) {
+            console.error("Erreur lors de l'inscription :", err.message);
+            setMessage(err.message);
+            setSuccess(false);
+            setShowModal(true);
+        }
     }
+
     const handleCloseModal = () => {
         setShowModal(false);
-        navigate("/welcome")
-    }
+        if (success) {
+            navigate("/welcome");
+        }
+    };
 
-    return(
+    return (
         <>
             <RegisterView register={register} />
             {showModal && (

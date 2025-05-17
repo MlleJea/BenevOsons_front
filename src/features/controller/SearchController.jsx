@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import SearchView from "@view/SearchView";
 import { fetchSkillTypes } from "@controller/ReferentielController";
+import PopupModal from "@components/PopupModal";
 
 
 export default function SearchController() {

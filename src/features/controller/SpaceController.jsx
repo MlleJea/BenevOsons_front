@@ -56,9 +56,7 @@ export default function SpaceController() {
         fetchAllData();
     }, [id, token, role]);
 
-    const updateUser = (updatedFields) => {
-        setUserToDisplay(prev => ({ ...prev, ...updatedFields }));
-
+    const updateUser = async (updatedFields) => {
         const requestOptionsUpdate = {
             method: "PUT",
             headers: {
@@ -68,22 +66,23 @@ export default function SpaceController() {
             body: JSON.stringify(updatedFields),
         };
 
-        return fetch(`${backUrl}/space/update/${id}`, requestOptionsUpdate)
-            .then(response => {
-                if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
-                return response.json();
-            })
-            .then(json => {
-                setModalMessage("Modifications enregistrées !");
-                setShowModal(true);
-                return { success: true, message: "Modifications enregistrées", data: json };
-            })
-            .catch(error => {
-                console.error("Erreur update :", error);
-                setModalMessage("Erreur lors de la modification.");
-                setShowModal(true);
-                return { success: false };
-            });
+        try {
+            const response = await fetch(`${backUrl}/space/update/${id}`, requestOptionsUpdate);
+            if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+
+            const updatedUser = await response.json();
+
+            setUserToDisplay(updatedUser);
+
+            setModalMessage("Modifications enregistrées !");
+            setShowModal(true);
+            return { success: true, message: "Modifications enregistrées", data: updatedUser };
+        } catch (error) {
+            console.error("Erreur update :", error);
+            setModalMessage("Erreur lors de la modification.");
+            setShowModal(true);
+            return { success: false };
+        }
     };
 
     const addSkill = (skillToAdd) => {

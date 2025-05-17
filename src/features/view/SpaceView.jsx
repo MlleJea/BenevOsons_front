@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { Row, Col, Card, Form, Button } from "react-bootstrap";
-import { 
-    validatePassword, 
-    validateConfirmPassword, 
+import FormGroupRow from "@components/FormGroupRow";
+import {
+    validatePassword,
+    validateConfirmPassword,
     validateFrenchPhone,
-    validateRequiredText, 
+    validateRequiredText,
     validateAddress
-  } from "@utils/validationUtils";
+} from "@utils/validationUtils";
 
 export default function SpaceView({ user, role, updateUser, addSkill, skillTypes = [], grades = [], id, skills = [] }) {
     if (!user) {
         return <div>Chargement des données utilisateur...</div>;
     }
 
-      const [errors, setErrors] = useState({});
-    
+    const [errors, setErrors] = useState({});
+
 
     const firstAddress = user.userAdressList?.[0] || {};
 
@@ -49,7 +50,7 @@ export default function SpaceView({ user, role, updateUser, addSkill, skillTypes
 
     const handleProfileSubmit = () => {
         if (profilFields.password && profilFields.password !== profilFields.passwordConfirmation) {
-        
+
             return;
         }
 
@@ -111,67 +112,118 @@ export default function SpaceView({ user, role, updateUser, addSkill, skillTypes
                 <Card className="p-4 w-50 mb-4">
                     <Card.Header className="text-center">Mes informations</Card.Header>
                     <Card.Body>
-                        <Row className="mb-3"><Col><strong>Email:</strong> {user.email}</Col></Row>
-                        <Row className="mb-3"><Col><strong>Nom:</strong> {user.name}</Col></Row>
+                        <Row className="mb-3">
+                            <Col>
+                                <strong>Email:</strong> {user.email}
+                            </Col>
+                        </Row>
+                        <Row className="mb-3">
+                            <Col>
+                                <strong>Nom:</strong> {user.name}
+                            </Col>
+                        </Row>
 
                         {role === "VOLUNTEER" && (
-                            <Row className="mb-3"><Col><strong>Date de naissance:</strong> {user.birthdate}</Col></Row>
+                            <Row className="mb-3">
+                                <Col>
+                                    <strong>Date de naissance:</strong> {user.birthdate}
+                                </Col>
+                            </Row>
                         )}
                         {role === "ORGANIZATION" && (
-                            <Row className="mb-3"><Col><strong>RNA:</strong> {user.rna}</Col></Row>
+                            <Row className="mb-3">
+                                <Col>
+                                    <strong>RNA:</strong> {user.rna}
+                                </Col>
+                            </Row>
                         )}
 
-                        <Row className="mb-3"><Col><strong>Inscription le:</strong> {user.registrationDate}</Col></Row>
+                        <Row className="mb-3">
+                            <Col>
+                                <strong>Inscription le:</strong> {user.registrationDate}
+                            </Col>
+                        </Row>
 
-                        <Form.Group className="mb-3">
-                            <Form.Label>Numéro de téléphone</Form.Label>
-                            <Form.Control
+                        {/* Téléphone */}
+                        <FormGroupRow
+                            label="Numéro de téléphone"
+                            name="phoneNumber"
+                            type="text"
+                            value={profilFields.phoneNumber}
+                            onChange={handleChange}
+                            placeholder="06 00 00 00 00"
+                            icon="fa-phone"
+                            error={errors.phoneNumber}
+                        />
+
+                        {/* Adresse */}
+                        <h6 className="mt-3">Adresse</h6>
+                        {[
+                            {
+                                name: "adress.streetNumber",
+                                label: "N°",
+                                placeholder: "12",
+                                icon: "fa-map-marker",
+                            },
+                            {
+                                name: "adress.streetName",
+                                label: "Rue",
+                                placeholder: "Rue du Bac",
+                                icon: "fa-road",
+                            },
+                            {
+                                name: "adress.postalCode",
+                                label: "Code postal",
+                                placeholder: "75007",
+                                icon: "fa-location-arrow",
+                            },
+                            {
+                                name: "adress.city",
+                                label: "Ville",
+                                placeholder: "Paris",
+                                icon: "fa-city",
+                            },
+                        ].map(({ name, label, placeholder, icon }) => (
+                            <FormGroupRow
+                                key={name}
+                                label={label}
+                                name={name}
                                 type="text"
-                                name="phoneNumber"
-                                value={profilFields.phoneNumber}
+                                value={profilFields.userAdressList[name.split(".")[1]]}
                                 onChange={handleChange}
+                                placeholder={placeholder}
+                                icon={icon}
+                                error={errors[name]}
                             />
-                        </Form.Group>
+                        ))}
 
-                        <Form.Group className="mb-3">
-                            <Form.Label>Adresse</Form.Label>
-                            {["streetNumber", "streetName", "postalCode", "city"].map((field, i) => (
-                                <Form.Control
-                                    key={i}
-                                    type="text"
-                                    name={`adress.${field}`}
-                                    placeholder={field}
-                                    value={profilFields.userAdressList[field]}
-                                    onChange={handleChange}
-                                    className="mb-2"
-                                />
-                            ))}
-                        </Form.Group>
+                        {/* Mot de passe */}
+                        <FormGroupRow
+                            label="Mot de passe"
+                            name="password"
+                            type="password"
+                            value={profilFields.password}
+                            onChange={handleChange}
+                            placeholder="Nouveau mot de passe"
+                            icon="fa-lock"
+                            error={errors.password}
+                        />
 
-                        <Form.Group className="mb-3">
-                            <Form.Label>Mot de passe</Form.Label>
-                            <Form.Control
-                                type="password"
-                                name="password"
-                                placeholder="Nouveau mot de passe"
-                                value={profilFields.password}
-                                onChange={handleChange}
-                            />
-                        </Form.Group>
-
-                        <Form.Group className="mb-3">
-                            <Form.Label>Confirmez le mot de passe</Form.Label>
-                            <Form.Control
-                                type="password"
-                                name="passwordConfirmation"
-                                placeholder="Confirmez le nouveau mot de passe"
-                                value={profilFields.passwordConfirmation}
-                                onChange={handleChange}
-                            />
-                        </Form.Group>
+                        <FormGroupRow
+                            label="Confirmer le mot de passe"
+                            name="passwordConfirmation"
+                            type="password"
+                            value={profilFields.passwordConfirmation}
+                            onChange={handleChange}
+                            placeholder="Confirmez le mot de passe"
+                            icon="fa-lock"
+                            error={errors.passwordConfirmation}
+                        />
 
                         <div className="text-center">
-                            <Button variant="success" onClick={handleProfileSubmit}>Enregistrer</Button>
+                            <Button variant="success" onClick={handleProfileSubmit}>
+                                Enregistrer
+                            </Button>
                         </div>
                     </Card.Body>
                 </Card>
@@ -183,9 +235,14 @@ export default function SpaceView({ user, role, updateUser, addSkill, skillTypes
                             {displayedSkills.length > 0 ? (
                                 <ul className="list-group mb-3">
                                     {displayedSkills.map((skill, idx) => (
-                                        <li key={idx} className="list-group-item d-flex justify-content-between align-items-center">
+                                        <li
+                                            key={idx}
+                                            className="list-group-item d-flex justify-content-between align-items-center"
+                                        >
                                             <div>
-                                                <strong>{skill.skillType?.label || skill.skillTypeLabel} : </strong>
+                                                <strong>
+                                                    {skill.skillType?.label || skill.skillTypeLabel} :{" "}
+                                                </strong>
                                                 <>{skill.labelSkill}</>
                                             </div>
                                             <span className="badge rounded-pill">{skill.grade}</span>
@@ -213,15 +270,13 @@ export default function SpaceView({ user, role, updateUser, addSkill, skillTypes
                                 </Form.Select>
                             </Form.Group>
 
-                            <Form.Group className="mb-3">
-                                <Form.Label>Libellé</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    name="labelSkill"
-                                    value={newSkill.labelSkill}
-                                    onChange={handleSkillChange}
-                                />
-                            </Form.Group>
+                            <FormGroupRow
+                                label="Libellé"
+                                name="labelSkill"
+                                type="text"
+                                value={newSkill.labelSkill}
+                                onChange={handleSkillChange}
+                            />
 
                             <Form.Group className="mb-3">
                                 <Form.Label>Niveau</Form.Label>
@@ -232,13 +287,17 @@ export default function SpaceView({ user, role, updateUser, addSkill, skillTypes
                                 >
                                     <option value="">Choisir un niveau</option>
                                     {grades.map((grade, index) => (
-                                        <option key={index} value={grade}>{grade}</option>
+                                        <option key={index} value={grade}>
+                                            {grade}
+                                        </option>
                                     ))}
                                 </Form.Select>
                             </Form.Group>
 
                             <div className="text-center">
-                                <Button variant="primary" onClick={handleAddSkill}>Ajouter une compétence</Button>
+                                <Button variant="primary" onClick={handleAddSkill}>
+                                    Ajouter une compétence
+                                </Button>
                             </div>
                         </Card.Body>
                     </Card>

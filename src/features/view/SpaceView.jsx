@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Row, Col, Card, Form, Button } from "react-bootstrap";
-
 import { 
     validatePassword, 
     validateConfirmPassword, 
     validateFrenchPhone,
     validateRequiredText, 
     validateAddress
-  } from "../../utils/validationUtils";
+  } from "@utils/validationUtils";
 
 export default function SpaceView({ user, role, updateUser, addSkill, skillTypes = [], grades = [], id, skills = [] }) {
     if (!user) {
@@ -199,6 +198,7 @@ export default function SpaceView({ user, role, updateUser, addSkill, skillTypes
 
                             <div>Ajouter une compétence</div>
                             <Form.Group className="mb-3">
+                                <Form.Label>Type de compétence</Form.Label>
                                 <Form.Select
                                     name="skillTypeLabel"
                                     value={newSkill.skillTypeLabel}

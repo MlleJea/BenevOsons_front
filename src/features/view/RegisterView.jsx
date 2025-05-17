@@ -10,7 +10,7 @@ import {
   validateDate, 
   validateRNA,
   validateAddress
-} from "../../utils/validationUtils";
+} from "@utils/validationUtils";
 
 export default function RegisterView(props) {
   const [userType, setUserType] = useState(null);

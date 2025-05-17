@@ -3,13 +3,14 @@ import { Container, Nav, Navbar } from "react-bootstrap";
 import { Routes, Route, Link, useNavigate } from "react-router-dom";
 import heartIcon from "/public/pictures/heart-icon.png";
 
-import { myContext } from "../index";
+import { myContext } from "./index";
 
-import Welcome from "./Welcome";
-import ConnectionController from "./controller/ConnectionController";
-import SpaceController from "./controller/SpaceController";
-import RegisterController from "./controller/RegisterController";
-import MissionController from "./controller/MissionController";
+import Welcome from "@components/Welcome";
+import ConnectionController from "@controller/ConnectionController";
+import SpaceController from "@controller/SpaceController";
+import RegisterController from "@controller/RegisterController";
+import MissionController from "@controller/MissionController";
+import SearchController from "@controller/SearchController";
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -82,17 +83,26 @@ export default function App() {
                 Missions
               </Nav.Link>
               <Nav.Link
-                  as={Link}
-                  eventKey="5"
-                  to="/welcome"
-                  hidden={user === null}
-                  onClick={() => {
-                    setUser(null);  
-                    navigate("/welcome");  
-                  }}
-                >
-                  <i className="fa fa-unlock me-2 navbar-icon"></i>
-                  Déconnexion
+                as={Link}
+                eventKey="5"
+                to={"/search"}
+                hidden={user === null ||user.role !== "VOLUNTEER"}
+              >
+                <i className="fa fa-search me-2 navbar-icon"></i>
+                Recherche
+              </Nav.Link>
+              <Nav.Link
+                as={Link}
+                eventKey="5"
+                to="/welcome"
+                hidden={user === null}
+                onClick={() => {
+                  setUser(null);
+                  navigate("/welcome");
+                }}
+              >
+                <i className="fa fa-unlock me-2 navbar-icon"></i>
+                Déconnexion
               </Nav.Link>
             </Nav>
           </Navbar.Collapse>
@@ -109,6 +119,7 @@ export default function App() {
             <Route exact path="/register" element={<RegisterController />} />
             <Route exact path="/space" element={<SpaceController />} />
             <Route exact path="/mission" element={<MissionController />} />
+            <Route exact path="/search" element={<SearchController/>}/>
           </Routes>
         </Container>
       </article>

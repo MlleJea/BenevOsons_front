@@ -1,11 +1,11 @@
 import React, { useContext, useState } from "react";
 
 import { useNavigate } from "react-router-dom";
-import { getBackUrl } from "../controller/backUrl";
-import RegisterView from "../view/RegisterView";
+import { getBackUrl } from "@utils/backUrl";
+import RegisterView from "@view/RegisterView";
 import { myContext } from "../../index";
 
-import PopupModal from "../../utils/PopupModal";
+import PopupModal from "@components/PopupModal";
 
 
 export default function RegisterController() {

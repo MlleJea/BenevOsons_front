@@ -1,11 +1,11 @@
 import React, { createContext } from "react";
-import App from "./components/App";
+import App from "./App";
 import { createRoot } from 'react-dom/client';
 
 /// Imports de style
-import "./css/cosmo.min.css"
-import "./css/style.css"
-import "./css/fontawesome.all.min.css"
+import "@styles/cosmo.min.css"
+import "@styles/style.css"
+import "@styles/fontawesome.all.min.css"
 import { BrowserRouter } from "react-router-dom";
 
 export const myContext = createContext();

@@ -1,12 +1,12 @@
 import React, { useContext, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { getBackUrl } from "../controller/backUrl";
-import SpaceView from "../view/SpaceView";
+import { getBackUrl } from "@utils/backUrl";
+import SpaceView from "@view/SpaceView";
 import { myContext } from "../../index";
+import { fetchGrades, fetchSkillTypes } from "@controller/ReferentielController";
+import PopupModal from "@components/PopupModal";
 
 export default function SpaceController() {
     const [contextUser] = useContext(myContext);
-    const navigate = useNavigate();
     const backUrl = getBackUrl();
 
     const [userToDisplay, setUserToDisplay] = useState(null);
@@ -14,6 +14,8 @@ export default function SpaceController() {
     const [skillTypes, setSkillTypes] = useState([]);
     const [grades, setGrades] = useState([]);
 
+    const [modalMessage, setModalMessage] = useState("");
+    const [showModal, setShowModal] = useState(false);
 
     const id = contextUser.id;
     const token = contextUser.token;
@@ -22,16 +24,13 @@ export default function SpaceController() {
     useEffect(() => {
         const fetchAllData = async () => {
             try {
-                // 1. User
                 const userRes = await fetch(`${backUrl}/space/display/${id}`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
-                if (!userRes.ok) throw new Error("Erreur lors de la récupération de l'utilisateur");
+                if (!userRes.ok) throw new Error("Erreur utilisateur");
                 const userData = await userRes.json();
-                console.log(userData);
                 setUserToDisplay(userData);
 
-                // 2. Skills
                 if (role === "VOLUNTEER") {
                     const skillRes = await fetch(`${backUrl}/space/displaySkill/${id}`, {
                         headers: { Authorization: `Bearer ${token}` },
@@ -42,30 +41,20 @@ export default function SpaceController() {
                     }
                 }
 
-                // 3. Skill types
-                const typesRes = await fetch(`${backUrl}/referentiel/displaySkillTypes`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                if (typesRes.ok) {
-                    const types = await typesRes.json();
-                    setSkillTypes(types);
-                }
+                const types = await fetchSkillTypes(token);
+                setSkillTypes(types);
 
-                // 4. Grades
-                const gradesRes = await fetch(`${backUrl}/referentiel/displayGrades`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                if (gradesRes.ok) {
-                    const gradeList = await gradesRes.json();
-                    setGrades(gradeList);
-                }
+                const gradeList = await fetchGrades(token);
+                setGrades(gradeList);
             } catch (err) {
-                console.error("Erreur lors du chargement des données :", err);
+                console.error("Erreur chargement data :", err);
+                setModalMessage("Erreur lors du chargement des données.");
+                setShowModal(true);
             }
         };
 
         fetchAllData();
-    }, [id, token, role, backUrl]);
+    }, [id, token, role]);
 
     const updateUser = (updatedFields) => {
         setUserToDisplay(prev => ({ ...prev, ...updatedFields }));
@@ -85,16 +74,19 @@ export default function SpaceController() {
                 return response.json();
             })
             .then(json => {
+                setModalMessage("Modifications enregistrées !");
+                setShowModal(true);
                 return { success: true, message: "Modifications enregistrées", data: json };
             })
             .catch(error => {
                 console.error("Erreur update :", error);
-                return { success: false, message: "Erreur lors de la modification" };
+                setModalMessage("Erreur lors de la modification.");
+                setShowModal(true);
+                return { success: false };
             });
     };
 
     const addSkill = (skillToAdd) => {
-        console.log(skillToAdd);
         const requestOptionAddSkill = {
             method: "POST",
             headers: {
@@ -104,31 +96,40 @@ export default function SpaceController() {
             body: JSON.stringify(skillToAdd),
         };
 
-        return fetch(`${backUrl}/space/addSkill${id}`, requestOptionAddSkill)
+        return fetch(`${backUrl}/space/addSkill/${id}`, requestOptionAddSkill)
             .then(response => {
                 if (!response.ok) throw new Error(`Erreur HTTP ${response.status}`);
                 return response.json();
             })
             .then(data => {
                 setSkillToDisplay(prev => [...(prev || []), data]);
+                setModalMessage("Compétence ajoutée avec succès !");
+                setShowModal(true);
                 return { success: true, data };
             })
             .catch(error => {
                 console.error("Erreur addSkill :", error);
+                setModalMessage("Erreur lors de l'ajout de la compétence.");
+                setShowModal(true);
                 return { success: false };
             });
     };
 
     return (
-        <SpaceView
-            user={userToDisplay}
-            role={role}
-            updateUser={updateUser}
-            skills={skillToDisplay}
-            addSkill={addSkill}
-            skillTypes={skillTypes}
-            grades={grades}
-            id={id}
-        />
+        <>
+            <SpaceView
+                user={userToDisplay}
+                role={role}
+                updateUser={updateUser}
+                skills={skillToDisplay}
+                addSkill={addSkill}
+                skillTypes={skillTypes}
+                grades={grades}
+                id={id}
+            />
+            {showModal && (
+                <PopupModal message={modalMessage} onClose={() => setShowModal(false)} />
+            )}
+        </>
     );
 }

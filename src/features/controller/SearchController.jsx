@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import SearchView from "@view/SearchView";
 import { fetchSkillTypes } from "@controller/ReferentielController";
 import PopupModal from "@components/PopupModal";
+import { myContext } from "../../index";
 
 
 export default function SearchController() {
@@ -9,6 +10,8 @@ export default function SearchController() {
     const [skillTypes, setSkillTypes] = useState([]);
     const [modalMessage, setModalMessage] = useState("");
     const [showModal, setShowModal] = useState(false);
+    const [user] = useContext(myContext);
+    const token = user.token;
 
     useEffect(() => {
         const fetchData = async () => {
@@ -35,12 +38,16 @@ export default function SearchController() {
             latitude: null,
             longitude: null,
             radiusKm: filters.distanceKm ? parseFloat(filters.distanceKm) : null,
+            volunteerId: null,
         };
 
         try {
             const response = await fetch("http://localhost:8080/api/rest/search/filter", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
                 body: JSON.stringify(payload),
             });
 

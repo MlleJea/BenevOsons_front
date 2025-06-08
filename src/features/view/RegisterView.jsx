@@ -1,23 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Row, Col, Card, InputGroup, Form, Nav, Button } from "react-bootstrap";
+import { Row, Col, Card, Form, Button } from "react-bootstrap";
 import FormGroupRow from "@components/FormGroupRow";
-import { Link } from "react-router-dom";
-import {
-  validateEmail,
-  validatePassword,
-  validateConfirmPassword,
-  validateFrenchPhone,
-  validateRequiredText,
-  validateDate,
-  validateRNA,
-  validateAddress
-} from "@utils/validationUtils";
-import { verifyAddressExists } from "@utils/verifyAdressExist";
+import { validateEmail, validatePassword, validateConfirmPassword, validateFrenchPhone, validateRequiredText, validateDate, validateRNA } from "@utils/validationUtils";
+import AddressForm from "@components/AddressForm";
 
 export default function RegisterView(props) {
   const [userType, setUserType] = useState(null);
   const [errors, setErrors] = useState({});
-  const [citySuggestions, setCitySuggestions] = useState([]);
+  const [addressValid, setAddressValid] = useState(false);
 
   const [fields, setFields] = useState({
     email: "",
@@ -28,7 +18,7 @@ export default function RegisterView(props) {
     name: "",
     birthDate: "",
     rna: "",
-    adressList: [{
+    addressList: [{
       streetNumber: "",
       streetName: "",
       postalCode: "",
@@ -36,47 +26,22 @@ export default function RegisterView(props) {
     }],
   });
 
-  useEffect(() => {
-    const postalCode = fields.adressList[0].postalCode;
-    if (postalCode.length === 5) {
-      fetch(`https://geo.api.gouv.fr/communes?codePostal=${postalCode}&fields=nom&format=json`)
-        .then((res) => res.json())
-        .then((data) => {
-          const cities = data.map((city) => city.nom);
-          setCitySuggestions(cities);
-        })
-        .catch((error) => {
-          console.error("Erreur lors de la récupération des villes :", error);
-          setCitySuggestions([]);
-        });
-    } else {
-      setCitySuggestions([]);
-    }
-  }, [fields.adressList[0].postalCode]);
-
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name.startsWith("adressList.")) {
-      const addressField = name.split(".")[1];
-      return setFields((prevFields) => {
-        const updatedadressList = [...prevFields.adressList];
-        updatedadressList[0] = {
-          ...updatedadressList[0],
-          [addressField]: value || "",
-        };
-        return {
-          ...prevFields,
-          adressList: updatedadressList,
-        };
-      });
-    }
     setFields((prevFields) => ({
       ...prevFields,
       [name]: value || "",
     }));
   };
 
-  const validate = async () => {
+  const handleAddressChange = (updatedAddress) => {
+    setFields((prevFields) => ({
+      ...prevFields,
+      addressList: [updatedAddress],
+    }));
+  };
+
+  const validate = () => {
     const newErrors = {};
 
     const emailError = validateEmail(fields.email);
@@ -104,9 +69,8 @@ export default function RegisterView(props) {
       if (rnaError) newErrors.rna = rnaError;
     }
 
-    const addressErrors = verifyAddressExists(fields.adressList[0]);
-    for (const [key, value] of Object.entries(addressErrors)) {
-      newErrors[`adressList.${key}`] = value;
+    if (!addressValid) {
+      newErrors.address = "Adresse invalide ou non reconnue.";
     }
 
     setErrors(newErrors);
@@ -157,64 +121,36 @@ export default function RegisterView(props) {
 
         {userType && (
           <Form onSubmit={handleSubmit} className="p-3">
-            {/* Email */}
-            <FormGroupRow label="Email" name="email" type="email" icon="fa-user" value={fields.email} onChange={handleChange} error={errors.email} placeholder="ex : exemple@mail.com" />
+            <FormGroupRow label="Email" name="email" type="email" icon="fa-at" value={fields.email} onChange={handleChange} error={errors.email} placeholder="ex : exemple@mail.com" />
 
-            {/* Password */}
             <FormGroupRow label="Mot de passe" name="password" type="password" icon="fa-key" value={fields.password} onChange={handleChange} error={errors.password} placeholder="Votre mot de passe" />
 
-            {/* Confirm Password */}
             <FormGroupRow label="Confirmez votre mot de passe" name="confirmationPassword" type="password" icon="fa-key" value={fields.confirmationPassword} onChange={handleChange} error={errors.confirmationPassword} placeholder="Confirmez votre mot de passe" />
 
-            {/* Phone Number */}
             <FormGroupRow label="Numéro de téléphone" name="phoneNumber" type="tel" icon="fa-phone" value={fields.phoneNumber} onChange={handleChange} error={errors.phoneNumber} placeholder="ex : 0600000000" />
 
-            {/* Name */}
-            <FormGroupRow label="Nom" name="name" type="text" value={fields.name} onChange={handleChange} error={errors.name} placeholder="ex : Marie DUPONT" />
+            <FormGroupRow label="Nom" name="name" type="text" icon="fa-user" value={fields.name} onChange={handleChange} error={errors.name} placeholder="ex : Marie DUPONT" />
 
-            {/* Birth Date (volunteer only) */}
             {userType === "volunteer" && (
-              <FormGroupRow label="Date de naissance" name="birthDate" type="date" value={fields.birthDate} onChange={handleChange} error={errors.birthDate} />
+              <FormGroupRow label="Date de naissance" name="birthDate" type="date" icon="fa-cake-candles" value={fields.birthDate} onChange={handleChange} error={errors.birthDate} />
             )}
 
-            {/* RNA (organization only) */}
             {userType === "organization" && (
-              <FormGroupRow label="RNA" name="rna" type="text" value={fields.rna} onChange={handleChange} error={errors.rna} placeholder="ex : W123456789" />
+              <FormGroupRow label="RNA" name="rna" type="text" icon="fa-book" value={fields.rna} onChange={handleChange} error={errors.rna} placeholder="ex : W123456789" />
             )}
 
-            {/* Address Fields */}
-            <FormGroupRow label="Numéro de rue" name="adressList.streetNumber" type="text" value={fields.adressList[0].streetNumber} onChange={handleChange} error={errors["adressList.streetNumber"]} placeholder="ex : 12B" />
-            <FormGroupRow label="Nom de la rue" name="adressList.streetName" type="text" value={fields.adressList[0].streetName} onChange={handleChange} error={errors["adressList.streetName"]} placeholder="ex : Place de la Victoire" />
-            <FormGroupRow label="Code Postal" name="adressList.postalCode" type="number" value={fields.adressList[0].postalCode} onChange={handleChange} error={errors["adressList.postalCode"]} placeholder="ex : 75000" />
+            {/* Adresse complète via AddressForm */}
+            <div className="mt-3 mb-2">
+              <label className="form-label fw-bold" >Adresse</label>
+              <AddressForm
+                address={fields.addressList[0]}
+                onChange={handleAddressChange}
+                onValidityChange={setAddressValid}
+              />
+              {errors.address && <div className="text-danger mt-1">{errors.address}</div>}
+            </div>
 
-            <Row className="ps-3 pe-3">
-              <Col sm={3}><output>Ville</output></Col>
-              <Col sm={7}>
-                {errors["adressList.city"] && <Form.Text className="text-danger">{errors["adressList.city"]}</Form.Text>}
-                <InputGroup className="mb-3">
-                  <Form.Select
-                    name="adressList.city"
-                    value={fields.adressList[0].city}
-                    onChange={handleChange}
-                    isInvalid={!!errors["adressList.city"]}
-                  >
-                    <option value="">Choisissez une ville</option>
-                    {citySuggestions.map((city, index) => (
-                      <option key={index} value={city}>
-                        {city}
-                      </option>
-                    ))}
-                  </Form.Select>
-                  {errors["adressList.city"] && (
-                    <Form.Control.Feedback type="invalid">
-                      {errors["adressList.city"]}
-                    </Form.Control.Feedback>
-                  )}
-                </InputGroup>
-              </Col>
-            </Row>
-
-            <Row className="pb-3 ps-3 pe-3">
+            <Row className="pb-3 pt-3">
               <Col className="text-center">
                 <Button className="w-100" type="submit" variant="primary">
                   Inscription

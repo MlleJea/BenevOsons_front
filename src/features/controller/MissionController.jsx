@@ -13,12 +13,21 @@ export default function MissionController() {
     const [modalMessage, setModalMessage] = useState("");
     const [showModal, setShowModal] = useState(false);
 
-    const { id, token } = user;
+    const { id, token, role } = user;
 
     useEffect(() => {
         const fetchAllData = async () => {
             try {
-                const missionRes = await fetch(`${backUrl}/mission/displayMyMissions/${id}`, {
+                let endpoint;
+                if (role === "ORGANIZATION") {
+                    endpoint = `${backUrl}/mission/displayOrganizationMissions/${id}`;
+                } else if (role === "VOLUNTEER") {
+                    endpoint = `${backUrl}/mission/displayVolunteerMissions/${id}`;
+                } else {
+                    throw new Error("Rôle utilisateur inconnu");
+                }
+
+                const missionRes = await fetch(endpoint, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 if (!missionRes.ok) throw new Error("Erreur lors de la récupération des missions");
@@ -36,7 +45,7 @@ export default function MissionController() {
         };
 
         fetchAllData();
-    }, [id, token]);
+    }, [id, token, role]);
 
     const addMission = (missionToAdd) => {
         const requestOptionAddMission = {

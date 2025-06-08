@@ -6,7 +6,7 @@ body {
 
 header {
     height: 5rem;
-    background-color: rgba(255, 204, 0, 1);
+    background: linear-gradient(rgba(255, 204, 0, 1), rgb(255, 170, 21));
 }
 
 header>h1 {
@@ -18,8 +18,7 @@ header>h1 {
 
 footer {
     height: 3rem;
-    background-color: rgba(255, 204, 0, 1);
-}
+background: linear-gradient(rgb(255, 170, 21),rgba(255, 204, 0, 1));}
 
 footer>h6 {
     font-size: 1.2rem;
@@ -52,16 +51,16 @@ article {
     background-color: #F8F5F0;
 }
 
-.text-goldenrod {
-    color: goldenrod;
-}
-
-.text-darkgoldenrod {
-    color: darkgoldenrod;
-}
-
 .display-none {
     display: none;
+}
+
+/* text */
+.title {
+    text-align: center;
+    font-weight: bold;
+    font-size: large;
+    color: rgba(255, 204, 0, 1) !important;
 }
 
 .h-content {
@@ -114,7 +113,8 @@ article {
 }
 
 /* button style */
-button:hover {
+button:hover,
+.nav-link:hover {
     color: rgb(97, 96, 96) !important;
 }
 
@@ -167,4 +167,25 @@ button:hover {
     background: none;
     cursor: pointer;
     font-size: 20px;
+}
+
+.profile-info-label {
+    font-weight: bold;
+    color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.profile-info-label i {
+    margin-right: 0.5rem;
+    color: rgba(255, 204, 0, 1);
+}
+
+.address-form-container {
+    border: 2px solid rgba(255, 204, 0, 1);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background-color: #fffef8;
 }

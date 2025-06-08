@@ -1,62 +1,113 @@
 import React, { useState, useEffect } from "react";
 import { Row, Col, Card, Form, Button } from "react-bootstrap";
 import FormGroupRow from "@components/FormGroupRow";
+import AddressForm from "@components/AddressForm";
 import {
     validatePassword,
     validateConfirmPassword,
     validateFrenchPhone,
-    validateRequiredText,
-    validateAddress
 } from "@utils/validationUtils";
 
-export default function SpaceView({ user, role, updateUser, addSkill, skillTypes = [], grades = [], id, skills = [] }) {
+export default function SpaceView({
+    user,
+    role,
+    updateUser,
+    addSkill,
+    skillTypes = [],
+    grades = [],
+    id,
+    skills = [],
+}) {
     if (!user) {
         return <div>Chargement des données utilisateur...</div>;
     }
 
     const [errors, setErrors] = useState({});
 
-
-    const firstAddress = user.userAdressList?.[0] || {};
-
     const [profilFields, setProfilFields] = useState({
-        phoneNumber: user.phoneNumber || "",
+        phoneNumber: "",
         password: "",
         passwordConfirmation: "",
-        userAdressList: {
-            streetNumber: firstAddress.streetNumber || "",
-            streetName: firstAddress.streetName || "",
-            postalCode: firstAddress.postalCode || "",
-            city: firstAddress.city || "",
+        addressList: {
+            streetNumber: "",
+            streetName: "",
+            postalCode: "",
+            city: "",
         },
     });
 
+    useEffect(() => {
+        if (user) {
+            const firstAddress = user.userAddressList?.[0] || {};
+            setProfilFields((prev) => {
+                if (prev.phoneNumber || prev.addressList.streetName) return prev;
+
+                return {
+                    phoneNumber: user.phoneNumber || "",
+                    password: "",
+                    passwordConfirmation: "",
+                    addressList: {
+                        streetNumber: firstAddress.streetNumber || "",
+                        streetName: firstAddress.streetName || "",
+                        postalCode: firstAddress.postalCode || "",
+                        city: firstAddress.city || "",
+                    },
+                };
+            });
+        }
+    }, [user]);
+
     const handleChange = (e) => {
         const { name, value } = e.target;
-
-        if (name.startsWith("adress.")) {
-            const field = name.split(".")[1];
-            setProfilFields((prev) => ({
-                ...prev,
-                userAdressList: {
-                    ...prev.userAdressList,
-                    [field]: value,
-                },
-            }));
-        } else {
-            setProfilFields((prev) => ({ ...prev, [name]: value }));
-        }
+        setProfilFields((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleProfileSubmit = () => {
-        if (profilFields.password && profilFields.password !== profilFields.passwordConfirmation) {
+    const handleAddressChange = (newAddress) => {
+        setProfilFields((prev) => ({
+            ...prev,
+            addressList: newAddress,
+        }));
+    };
 
+    const handleEditAddress = () => {
+        console.log("Editer l’adresse (à brancher)");
+    };
+
+    const handleDeleteAddress = () => {
+        console.log("Supprimer l’adresse (à brancher)");
+    };
+
+    const handleAddAddress = () => {
+        console.log("Ajouter une nouvelle adresse (à implémenter)");
+    };
+
+
+    const handleProfileSubmit = () => {
+        const newErrors = {};
+
+        if (!validateFrenchPhone(profilFields.phoneNumber)) {
+            newErrors.phoneNumber = "Numéro invalide (format attendu : 06 XX XX XX XX)";
+        }
+
+        if (profilFields.password) {
+            if (!validatePassword(profilFields.password)) {
+                newErrors.password = "Le mot de passe est trop faible";
+            }
+
+            if (!validateConfirmPassword(profilFields.password, profilFields.passwordConfirmation)) {
+                newErrors.passwordConfirmation = "Les mots de passe ne correspondent pas";
+            }
+        }
+
+        setErrors(newErrors);
+
+        if (Object.keys(newErrors).length > 0) {
             return;
         }
 
         const dataToUpdate = {
             phoneNumber: profilFields.phoneNumber,
-            userAdressList: [profilFields.userAdressList],
+            addressList: [profilFields.addressList],
         };
 
         if (profilFields.password) {
@@ -82,122 +133,98 @@ export default function SpaceView({ user, role, updateUser, addSkill, skillTypes
 
     const handleSkillChange = (e) => {
         const { name, value } = e.target;
-        setNewSkill(prev => ({
+        setNewSkill((prev) => ({
             ...prev,
-            [name]: value
+            [name]: value,
         }));
     };
 
-
     const handleAddSkill = () => {
-        if (!newSkill.skillTypeLabel || !newSkill.labelSkill || !newSkill.grade) {
-            return;
-        }
-        setDisplayedSkills(prevSkills => [...prevSkills, newSkill]);
+        if (!newSkill.skillTypeLabel || !newSkill.labelSkill || !newSkill.grade) return;
 
+        setDisplayedSkills((prevSkills) => [...prevSkills, newSkill]);
         addSkill(newSkill);
-
 
         setNewSkill({
             labelSkill: "",
             grade: "",
             skillTypeLabel: "",
-            volunteerId: user.id
+            volunteerId: user.id,
         });
     };
 
     return (
-        <>
-            <Row className="justify-content-center p-4">
-                <Card className="p-4 w-50 mb-4">
-                    <Card.Header className="text-center">Mes informations</Card.Header>
-                    <Card.Body>
+        <Row className="justify-content-center p-4">
+            <Card className="p-4 w-50 mb-4">
+                <Card.Header className="text-center">Mes informations</Card.Header>
+                <Card.Body>
+                    <Row className="mb-3">
+                        <Col className="profile-info-label">
+                            <i className="fa fa-envelope" /> Email: {user.email}
+                        </Col>
+                    </Row>
+                    <Row className="mb-3">
+                        <Col className="profile-info-label">
+                            <i className="fa fa-user" /> Nom: {user.name}
+                        </Col>
+                    </Row>
+                    {role === "VOLUNTEER" && (
                         <Row className="mb-3">
-                            <Col>
-                                <strong>Email:</strong> {user.email}
+                            <Col className="profile-info-label">
+                                <i className="fa fa-birthday-cake" /> Date de naissance: {user.birthdate}
                             </Col>
                         </Row>
+                    )}
+                    {role === "ORGANIZATION" && (
                         <Row className="mb-3">
-                            <Col>
-                                <strong>Nom:</strong> {user.name}
+                            <Col className="profile-info-label">
+                                <i className="fa fa-id-card" /> RNA: {user.rna}
                             </Col>
                         </Row>
+                    )}
+                    <Row className="mb-3">
+                        <Col className="profile-info-label">
+                            <i className="fa fa-calendar" /> Inscription le: {user.registrationDate}
+                        </Col>
+                    </Row>
 
-                        {role === "VOLUNTEER" && (
-                            <Row className="mb-3">
-                                <Col>
-                                    <strong>Date de naissance:</strong> {user.birthdate}
-                                </Col>
-                            </Row>
-                        )}
-                        {role === "ORGANIZATION" && (
-                            <Row className="mb-3">
-                                <Col>
-                                    <strong>RNA:</strong> {user.rna}
-                                </Col>
-                            </Row>
-                        )}
+                    {/* Téléphone */}
+                    <FormGroupRow
+                        label="Numéro de téléphone"
+                        name="phoneNumber"
+                        type="text"
+                        value={profilFields.phoneNumber}
+                        onChange={handleChange}
+                        placeholder="06 00 00 00 00"
+                        icon="fa-phone"
+                        error={errors.phoneNumber}
+                    />
 
-                        <Row className="mb-3">
-                            <Col>
-                                <strong>Inscription le:</strong> {user.registrationDate}
-                            </Col>
-                        </Row>
-
-                        {/* Téléphone */}
-                        <FormGroupRow
-                            label="Numéro de téléphone"
-                            name="phoneNumber"
-                            type="text"
-                            value={profilFields.phoneNumber}
-                            onChange={handleChange}
-                            placeholder="06 00 00 00 00"
-                            icon="fa-phone"
-                            error={errors.phoneNumber}
+                    {/* Adresse */}
+                    <h6 className="mt-4 mb-2 profile-info-label">
+                        <i className="fa fa-home" /> Adresse
+                    </h6>
+                    <div className="address-form-container">
+                        <AddressForm
+                            address={profilFields.addressList}
+                            onChange={handleAddressChange}
+                            showApiCheck={true}
                         />
+                    </div>
+                    <div className="d-flex justify-content-end gap-2 mt-2">
+                        <Button variant="outline-warning" size="sm" onClick={handleEditAddress}>
+                            <i className="fa fa-pencil me-1" /> Modifier
+                        </Button>
+                        <Button variant="outline-danger" size="sm" onClick={handleDeleteAddress}>
+                            <i className="fa fa-trash me-1" /> Supprimer
+                        </Button>
+                        <Button variant="outline-success" size="sm" onClick={handleAddAddress}>
+                            <i className="fa fa-plus me-1" /> Ajouter une adresse
+                        </Button>
+                    </div>
 
-                        {/* Adresse */}
-                        <h6 className="mt-3">Adresse</h6>
-                        {[
-                            {
-                                name: "adress.streetNumber",
-                                label: "N°",
-                                placeholder: "12",
-                                icon: "fa-map-marker",
-                            },
-                            {
-                                name: "adress.streetName",
-                                label: "Rue",
-                                placeholder: "Rue du Bac",
-                                icon: "fa-road",
-                            },
-                            {
-                                name: "adress.postalCode",
-                                label: "Code postal",
-                                placeholder: "75007",
-                                icon: "fa-location-arrow",
-                            },
-                            {
-                                name: "adress.city",
-                                label: "Ville",
-                                placeholder: "Paris",
-                                icon: "fa-city",
-                            },
-                        ].map(({ name, label, placeholder, icon }) => (
-                            <FormGroupRow
-                                key={name}
-                                label={label}
-                                name={name}
-                                type="text"
-                                value={profilFields.userAdressList[name.split(".")[1]]}
-                                onChange={handleChange}
-                                placeholder={placeholder}
-                                icon={icon}
-                                error={errors[name]}
-                            />
-                        ))}
-
-                        {/* Mot de passe */}
+                    {/* Mot de passe */}
+                    <div className="mt-3">
                         <FormGroupRow
                             label="Mot de passe"
                             name="password"
@@ -219,90 +246,87 @@ export default function SpaceView({ user, role, updateUser, addSkill, skillTypes
                             icon="fa-lock"
                             error={errors.passwordConfirmation}
                         />
+                    </div>
+
+                    <div className="text-center">
+                        <Button variant="success" onClick={handleProfileSubmit}>
+                            Enregistrer
+                        </Button>
+                    </div>
+                </Card.Body>
+            </Card>
+
+            {role === "VOLUNTEER" && (
+                <Card className="p-4 w-50">
+                    <Card.Header className="text-center">Mes compétences</Card.Header>
+                    <Card.Body>
+                        {displayedSkills.length > 0 ? (
+                            <ul className="list-group mb-3">
+                                {displayedSkills.map((skill, idx) => (
+                                    <li key={idx} className="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>
+                                                {skill.skillType?.label || skill.skillTypeLabel} :{" "}
+                                            </strong>
+                                            {skill.labelSkill}
+                                        </div>
+                                        <span className="badge rounded-pill">{skill.grade}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-center text-muted">Aucune compétence ajoutée</p>
+                        )}
+
+                        <div>Ajouter une compétence</div>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Type de compétence</Form.Label>
+                            <Form.Select
+                                name="skillTypeLabel"
+                                value={newSkill.skillTypeLabel}
+                                onChange={handleSkillChange}
+                            >
+                                <option value="">Choisir un type</option>
+                                {skillTypes.map((skillType, index) => (
+                                    <option key={index} value={skillType.label}>
+                                        {skillType.label}
+                                    </option>
+                                ))}
+                            </Form.Select>
+                        </Form.Group>
+
+                        <FormGroupRow
+                            label="Libellé"
+                            name="labelSkill"
+                            type="text"
+                            value={newSkill.labelSkill}
+                            onChange={handleSkillChange}
+                        />
+
+                        <Form.Group className="mb-3">
+                            <Form.Label>Niveau</Form.Label>
+                            <Form.Select
+                                name="grade"
+                                value={newSkill.grade}
+                                onChange={handleSkillChange}
+                            >
+                                <option value="">Choisir un niveau</option>
+                                {grades.map((grade, index) => (
+                                    <option key={index} value={grade}>
+                                        {grade}
+                                    </option>
+                                ))}
+                            </Form.Select>
+                        </Form.Group>
 
                         <div className="text-center">
-                            <Button variant="success" onClick={handleProfileSubmit}>
-                                Enregistrer
+                            <Button variant="primary" onClick={handleAddSkill}>
+                                Ajouter une compétence
                             </Button>
                         </div>
                     </Card.Body>
                 </Card>
-
-                {role === "VOLUNTEER" && (
-                    <Card className="p-4 w-50">
-                        <Card.Header className="text-center">Mes compétences</Card.Header>
-                        <Card.Body>
-                            {displayedSkills.length > 0 ? (
-                                <ul className="list-group mb-3">
-                                    {displayedSkills.map((skill, idx) => (
-                                        <li
-                                            key={idx}
-                                            className="list-group-item d-flex justify-content-between align-items-center"
-                                        >
-                                            <div>
-                                                <strong>
-                                                    {skill.skillType?.label || skill.skillTypeLabel} :{" "}
-                                                </strong>
-                                                <>{skill.labelSkill}</>
-                                            </div>
-                                            <span className="badge rounded-pill">{skill.grade}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            ) : (
-                                <p className="text-center text-muted">Aucune compétence ajoutée</p>
-                            )}
-
-                            <div>Ajouter une compétence</div>
-                            <Form.Group className="mb-3">
-                                <Form.Label>Type de compétence</Form.Label>
-                                <Form.Select
-                                    name="skillTypeLabel"
-                                    value={newSkill.skillTypeLabel}
-                                    onChange={handleSkillChange}
-                                >
-                                    <option value="">Choisir un type</option>
-                                    {skillTypes.map((skillType, index) => (
-                                        <option key={index} value={skillType.label}>
-                                            {skillType.label}
-                                        </option>
-                                    ))}
-                                </Form.Select>
-                            </Form.Group>
-
-                            <FormGroupRow
-                                label="Libellé"
-                                name="labelSkill"
-                                type="text"
-                                value={newSkill.labelSkill}
-                                onChange={handleSkillChange}
-                            />
-
-                            <Form.Group className="mb-3">
-                                <Form.Label>Niveau</Form.Label>
-                                <Form.Select
-                                    name="grade"
-                                    value={newSkill.grade}
-                                    onChange={handleSkillChange}
-                                >
-                                    <option value="">Choisir un niveau</option>
-                                    {grades.map((grade, index) => (
-                                        <option key={index} value={grade}>
-                                            {grade}
-                                        </option>
-                                    ))}
-                                </Form.Select>
-                            </Form.Group>
-
-                            <div className="text-center">
-                                <Button variant="primary" onClick={handleAddSkill}>
-                                    Ajouter une compétence
-                                </Button>
-                            </div>
-                        </Card.Body>
-                    </Card>
-                )}
-            </Row>
-        </>
+            )}
+        </Row>
     );
 }

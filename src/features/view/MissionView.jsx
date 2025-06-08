@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Row, Col, Card, Form, Button, Badge, FormSelect } from "react-bootstrap";
 import MissionCard from "@components/MissionCard";
+import AddressForm from "@components/AddressForm";
 
 export default function MissionView({ addMission, missionsToDisplay, skillTypes }) {
   const [newMission, setNewMission] = useState({
@@ -8,11 +9,11 @@ export default function MissionView({ addMission, missionsToDisplay, skillTypes 
     description: "",
     missionSkillsTypeList: [],
     nbVolunteerSearch: "",
-    adress: {
+    address: {
       streetNumber: "",
       streetName: "",
       postalCode: "",
-      city: "",
+      city: ""
     },
     period: {
       periodId: null,
@@ -21,8 +22,10 @@ export default function MissionView({ addMission, missionsToDisplay, skillTypes 
     },
   });
 
+  const [addressValid, setAddressValid] = useState(false);
   const [displayMission, setDisplayedMission] = useState(missionsToDisplay || []);
   const [filterStatus, setFilterStatus] = useState("");
+  const [formErrors, setFormErrors] = useState({});
 
   useEffect(() => {
     setDisplayedMission(missionsToDisplay || []);
@@ -33,17 +36,6 @@ export default function MissionView({ addMission, missionsToDisplay, skillTypes 
     setNewMission((prev) => ({
       ...prev,
       [name]: value,
-    }));
-  };
-
-  const handleAdressChange = (e) => {
-    const { name, value } = e.target;
-    setNewMission((prev) => ({
-      ...prev,
-      adress: {
-        ...prev.adress,
-        [name]: value,
-      },
     }));
   };
 
@@ -78,9 +70,23 @@ export default function MissionView({ addMission, missionsToDisplay, skillTypes 
   };
 
   const handleAddMission = () => {
-    if (!newMission.title || !newMission.description) {
-      return;
+    const errors = {};
+
+    if (!newMission.title) errors.title = "Le titre est requis.";
+    if (!newMission.description) errors.description = "La description est requise.";
+    if (!newMission.nbVolunteerSearch) errors.nbVolunteerSearch = "Le nombre de bénévoles est requis.";
+    if (!newMission.period.startDate) errors.startDate = "La date de début est requise.";
+    if (!newMission.period.endDate) errors.endDate = "La date de fin est requise.";
+    if (!newMission.missionSkillsTypeList || newMission.missionSkillsTypeList.length === 0) {
+      errors.missionSkillsTypeList = "Au moins une compétence est requise.";
     }
+    if (!addressValid) {
+      errors.address = "L'adresse est invalide ou incomplète.";
+    }
+
+    setFormErrors(errors);
+
+    if (Object.keys(errors).length > 0) return;
 
     const missionToSend = {
       ...newMission,
@@ -98,7 +104,7 @@ export default function MissionView({ addMission, missionsToDisplay, skillTypes 
       description: "",
       missionSkillsTypeList: [],
       nbVolunteerSearch: "",
-      adress: {
+      address: {
         streetNumber: "",
         streetName: "",
         postalCode: "",
@@ -110,7 +116,14 @@ export default function MissionView({ addMission, missionsToDisplay, skillTypes 
         endDate: "",
       },
     });
+
+    setFormErrors({});
   };
+
+  const renderError = (field) =>
+    formErrors[field] && (
+      <div className="text-danger" style={{ fontSize: "0.9em" }}>{formErrors[field]}</div>
+    );
 
   const handleAddSkillType = (selectedLabel) => {
     const selectedSkill = skillTypes.find(skill => skill.label === selectedLabel);
@@ -147,11 +160,11 @@ export default function MissionView({ addMission, missionsToDisplay, skillTypes 
 
   return (
     <>
-      <Row className="justify-center p-4">
+      <Row className="flex justify-content-center p-4">
         <Card className="p-4 w-75 mb-4 yellow-border">
-          <Card.Header className="title yellow-border">Ajouter une mission</Card.Header>
+          <Card.Header className="title yellow-border align-text-center">Ajouter une mission</Card.Header>
           <Card.Body>
-            <Form>
+            <Form className="flex align-item-center">
               <Form.Group className="mb-3">
                 <Form.Label>Titre</Form.Label>
                 <Form.Control
@@ -160,6 +173,7 @@ export default function MissionView({ addMission, missionsToDisplay, skillTypes 
                   value={newMission.title}
                   onChange={handleInputChange}
                 />
+                {renderError("title")}
               </Form.Group>
 
               <Form.Group className="mb-3">
@@ -171,6 +185,7 @@ export default function MissionView({ addMission, missionsToDisplay, skillTypes 
                   value={newMission.description}
                   onChange={handleInputChange}
                 />
+                {renderError("description")}
               </Form.Group>
 
               <Form.Group className="mb-3">
@@ -183,6 +198,7 @@ export default function MissionView({ addMission, missionsToDisplay, skillTypes 
                   max={100}
                   onChange={handleInputChange}
                 />
+                {renderError("nbVolunteerSearch")}
               </Form.Group>
 
               <Form.Group className="mb-3">
@@ -190,7 +206,7 @@ export default function MissionView({ addMission, missionsToDisplay, skillTypes 
                 <div className="mb-2 badge">
                   {newMission.missionSkillsTypeList.map((skill) => (
                     <Badge bg="secondary" key={skill.id} className="me-2">
-                      {skill.label} {" "}
+                      {skill.label}{" "}
                       <span
                         style={{ cursor: "pointer" }}
                         onClick={() => handleRemoveSkillType(skill.id)}
@@ -223,46 +239,23 @@ export default function MissionView({ addMission, missionsToDisplay, skillTypes 
                     </Button>
                   </Col>
                 </Row>
+                {renderError("missionSkillsTypeList")}
               </Form.Group>
 
               <Form.Group className="mb-3">
                 <Form.Label>Adresse</Form.Label>
-                <Row>
-                  <Col>
-                    <Form.Control
-                      placeholder="Numéro"
-                      name="streetNumber"
-                      value={newMission.adress.streetNumber}
-                      onChange={handleAdressChange}
-                    />
-                  </Col>
-                  <Col>
-                    <Form.Control
-                      placeholder="Rue"
-                      name="streetName"
-                      value={newMission.adress.streetName}
-                      onChange={handleAdressChange}
-                    />
-                  </Col>
-                </Row>
-                <Row className="mt-2">
-                  <Col>
-                    <Form.Control
-                      placeholder="Code postal"
-                      name="postalCode"
-                      value={newMission.adress.postalCode}
-                      onChange={handleAdressChange}
-                    />
-                  </Col>
-                  <Col>
-                    <Form.Control
-                      placeholder="Ville"
-                      name="city"
-                      value={newMission.adress.city}
-                      onChange={handleAdressChange}
-                    />
-                  </Col>
-                </Row>
+                <AddressForm
+                  address={newMission.address}
+                  onChange={(updatedAddress) => {
+                    setNewMission((prev) => ({
+                      ...prev,
+                      address: updatedAddress,
+                    }));
+                  }}
+                  onValidityChange={setAddressValid}
+                  showApiCheck={true}
+                />
+                {renderError("address")}
               </Form.Group>
 
               <Form.Group className="mb-3">
@@ -279,6 +272,7 @@ export default function MissionView({ addMission, missionsToDisplay, skillTypes 
                       className="mt-2"
                       onChange={(e) => handleDateTimeChange("startDate", "time", e.target.value)}
                     />
+                    {renderError("startDate")}
                   </Col>
                   <Col md={6}>
                     <Form.Label>Fin</Form.Label>
@@ -291,13 +285,16 @@ export default function MissionView({ addMission, missionsToDisplay, skillTypes 
                       className="mt-2"
                       onChange={(e) => handleDateTimeChange("endDate", "time", e.target.value)}
                     />
+                    {renderError("endDate")}
                   </Col>
                 </Row>
               </Form.Group>
 
-              <Button variant="primary" onClick={handleAddMission}>
-                Ajouter la mission
-              </Button>
+              <div className="d-flex justify-content-center mt-3">
+                <Button variant="primary" onClick={handleAddMission}>
+                  Ajouter la mission
+                </Button>
+              </div>
             </Form>
           </Card.Body>
         </Card>
@@ -321,7 +318,7 @@ export default function MissionView({ addMission, missionsToDisplay, skillTypes 
               const status = getMissionStatus(mission.period.startDate, mission.period.endDate);
               return (
                 <Col key={index}>
-                    <MissionCard mission={mission} getMissionStatus={getMissionStatus} />
+                  <MissionCard mission={mission} getMissionStatus={getMissionStatus} />
                 </Col>
               );
             })}

@@ -1,13 +1,12 @@
 import React from "react";
 import { Card, Badge, Button } from "react-bootstrap";
-import { formatDateRange } from "@utils/formatDate";
+import { formatMissionDateTime } from "@utils/formatDate";
 
 export default function MissionCard({ mission, getMissionStatus }) {
   const status = getMissionStatus(mission.period.startDate, mission.period.endDate);
   const showApplyButton = true;
 
   const handleApply = () => {
-    // A faire : formulaire pour postuler
   };
 
   return (
@@ -20,12 +19,12 @@ export default function MissionCard({ mission, getMissionStatus }) {
         <Card.Text>{mission.description}</Card.Text>
         <Card.Text>
           <strong>Adresse:</strong><br />
-          {mission.adress.streetNumber} {mission.adress.streetName},<br />
-          {mission.adress.postalCode} {mission.adress.city}
+          {mission.address.streetNumber} {mission.address.streetName},<br />
+          {mission.address.postalCode} {mission.address.city}
         </Card.Text>
         <Card.Text>
           <strong>Période:</strong><br />
-          {formatDateRange(mission.period.startDate, mission.period.endDate)}
+          {formatMissionDateTime(mission.period.startDate, mission.period.endDate)}
         </Card.Text>
         <Card.Text>
           <strong>Bénévoles recherchés:</strong> {mission.nbVolunteerSearch}

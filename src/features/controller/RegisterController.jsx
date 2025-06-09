@@ -23,10 +23,20 @@ export default function RegisterController() {
                 body: JSON.stringify(fields),
             });
 
-            const data = await response.json();
+            let data;
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+                data = await response.json();
+            } else {
+                data = await response.text();
+            }
 
             if (!response.ok) {
-                throw new Error(data?.message || "Erreur lors de l'inscription.");
+                const errorMsg =
+                    typeof data === "object"
+                        ? data?.message || `Erreur lors de l'inscription : ${data.message}`
+                        : data || "Erreur lors de l'inscription.";
+                throw new Error(errorMsg);
             }
 
             setUser(data);

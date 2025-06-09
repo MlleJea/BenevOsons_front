@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Row, Col, Card, Form, Button, Badge, FormSelect } from "react-bootstrap";
 import MissionCard from "@components/MissionCard";
 import AddressForm from "@components/AddressForm";
+import { formatLocalDateTimeForBackend, updateMissionDateTime } from "@utils/formatDate";
 
 export default function MissionView({ addMission, missionsToDisplay, skillTypes }) {
   const [newMission, setNewMission] = useState({
@@ -22,7 +23,7 @@ export default function MissionView({ addMission, missionsToDisplay, skillTypes 
     },
   });
 
-  const [addressValid, setAddressValid] = useState(false);
+  const addressFormRef = useRef();
   const [displayMission, setDisplayedMission] = useState(missionsToDisplay || []);
   const [filterStatus, setFilterStatus] = useState("");
   const [formErrors, setFormErrors] = useState({});
@@ -39,37 +40,24 @@ export default function MissionView({ addMission, missionsToDisplay, skillTypes 
     }));
   };
 
-  const handleDateTimeChange = (field, type, value) => {
-    setNewMission((prev) => {
-      let datePart = "";
-      let timePart = "";
-
-      if (prev.period[field]) {
-        [datePart, timePart] = prev.period[field].split("T");
-      }
-
-      if (type === "date") {
-        datePart = value;
-      } else if (type === "time") {
-        timePart = value;
-        if (timePart && timePart.length === 5) {
-          timePart = `${timePart}:00`;
-        }
-      }
-
-      const fullISO = datePart && timePart ? `${datePart}T${timePart}` : datePart ? `${datePart}T00:00:00` : "";
-
-      return {
-        ...prev,
-        period: {
-          ...prev.period,
-          [field]: fullISO,
-        },
-      };
-    });
+  const handleAddressChange = (updatedAddress) => {
+    setNewMission((prev) => ({
+      ...prev,
+      address: updatedAddress,
+    }));
   };
 
-  const handleAddMission = () => {
+  const handleDateTimeChange = (field, type, value) => {
+    setNewMission((prev) => ({
+      ...prev,
+      period: {
+        ...prev.period,
+        [field]: updateMissionDateTime(prev.period[field], value, type)
+      }
+    }));
+  };
+
+  const handleAddMission = async () => {
     const errors = {};
 
     if (!newMission.title) errors.title = "Le titre est requis.";
@@ -80,9 +68,11 @@ export default function MissionView({ addMission, missionsToDisplay, skillTypes 
     if (!newMission.missionSkillsTypeList || newMission.missionSkillsTypeList.length === 0) {
       errors.missionSkillsTypeList = "Au moins une compétence est requise.";
     }
-    if (!addressValid) {
-      errors.address = "L'adresse est invalide ou incomplète.";
+    const isAddressValid = await addressFormRef.current?.validateAddress();
+    if (!isAddressValid) {
+      errors.address = "Adresse invalide ou non reconnue.";
     }
+
 
     setFormErrors(errors);
 
@@ -92,10 +82,11 @@ export default function MissionView({ addMission, missionsToDisplay, skillTypes 
       ...newMission,
       period: {
         periodId: newMission.period.periodId || null,
-        startDate: newMission.period.startDate || null,
-        endDate: newMission.period.endDate || null,
+        startDate: formatLocalDateTimeForBackend(newMission.period.startDate),
+        endDate: formatLocalDateTimeForBackend(newMission.period.endDate),
       },
     };
+
 
     addMission(missionToSend);
 
@@ -245,15 +236,9 @@ export default function MissionView({ addMission, missionsToDisplay, skillTypes 
               <Form.Group className="mb-3">
                 <Form.Label>Adresse</Form.Label>
                 <AddressForm
+                  ref={addressFormRef}
                   address={newMission.address}
-                  onChange={(updatedAddress) => {
-                    setNewMission((prev) => ({
-                      ...prev,
-                      address: updatedAddress,
-                    }));
-                  }}
-                  onValidityChange={setAddressValid}
-                  showApiCheck={true}
+                  onChange={handleAddressChange}
                 />
                 {renderError("address")}
               </Form.Group>

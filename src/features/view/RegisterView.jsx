@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Row, Col, Card, Form, Button } from "react-bootstrap";
 import FormGroupRow from "@components/FormGroupRow";
 import { validateEmail, validatePassword, validateConfirmPassword, validateFrenchPhone, validateRequiredText, validateDate, validateRNA } from "@utils/validationUtils";
@@ -7,7 +7,7 @@ import AddressForm from "@components/AddressForm";
 export default function RegisterView(props) {
   const [userType, setUserType] = useState(null);
   const [errors, setErrors] = useState({});
-  const [addressValid, setAddressValid] = useState(false);
+  const addressFormRef = useRef();
 
   const [fields, setFields] = useState({
     email: "",
@@ -41,7 +41,7 @@ export default function RegisterView(props) {
     }));
   };
 
-  const validate = () => {
+  const validate = async () => {
     const newErrors = {};
 
     const emailError = validateEmail(fields.email);
@@ -69,7 +69,9 @@ export default function RegisterView(props) {
       if (rnaError) newErrors.rna = rnaError;
     }
 
-    if (!addressValid) {
+    // Valider l'adresse via la ref
+    const isAddressValid = await addressFormRef.current?.validateAddress();
+    if (!isAddressValid) {
       newErrors.address = "Adresse invalide ou non reconnue.";
     }
 
@@ -141,11 +143,11 @@ export default function RegisterView(props) {
 
             {/* Adresse complète via AddressForm */}
             <div className="mt-3 mb-2">
-              <label className="form-label fw-bold" >Adresse</label>
+              <label className="form-label fw-bold">Adresse</label>
               <AddressForm
+                ref={addressFormRef}
                 address={fields.addressList[0]}
                 onChange={handleAddressChange}
-                onValidityChange={setAddressValid}
               />
               {errors.address && <div className="text-danger mt-1">{errors.address}</div>}
             </div>

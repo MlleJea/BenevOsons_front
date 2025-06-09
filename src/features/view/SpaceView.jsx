@@ -69,18 +69,19 @@ export default function SpaceView({
         }));
     };
 
-    const handleEditAddress = () => {
-        console.log("Editer l’adresse (à brancher)");
-    };
-
     const handleDeleteAddress = () => {
-        console.log("Supprimer l’adresse (à brancher)");
+        console.log("Supprimer l'adresse (à brancher)");
+        // Tu peux vider l'adresse ou la supprimer côté serveur
+        setProfilFields((prev) => ({
+            ...prev,
+            addressList: {
+                streetNumber: "",
+                streetName: "",
+                postalCode: "",
+                city: "",
+            },
+        }));
     };
-
-    const handleAddAddress = () => {
-        console.log("Ajouter une nouvelle adresse (à implémenter)");
-    };
-
 
     const handleProfileSubmit = () => {
         const newErrors = {};
@@ -208,19 +209,10 @@ export default function SpaceView({
                         <AddressForm
                             address={profilFields.addressList}
                             onChange={handleAddressChange}
-                            showApiCheck={true}
+                            onDelete={handleDeleteAddress}
+                            isEditable={false}
+                            showActions={true}
                         />
-                    </div>
-                    <div className="d-flex justify-content-end gap-2 mt-2">
-                        <Button variant="outline-warning" size="sm" onClick={handleEditAddress}>
-                            <i className="fa fa-pencil me-1" /> Modifier
-                        </Button>
-                        <Button variant="outline-danger" size="sm" onClick={handleDeleteAddress}>
-                            <i className="fa fa-trash me-1" /> Supprimer
-                        </Button>
-                        <Button variant="outline-success" size="sm" onClick={handleAddAddress}>
-                            <i className="fa fa-plus me-1" /> Ajouter une adresse
-                        </Button>
                     </div>
 
                     {/* Mot de passe */}

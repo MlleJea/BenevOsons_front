@@ -4,7 +4,6 @@ import { fetchSkillTypes } from "@controller/ReferentielController";
 import PopupModal from "@components/PopupModal";
 import { myContext } from "../../index";
 
-
 export default function SearchController() {
     const [allMissions, setAllMissions] = useState([]);
     const [skillTypes, setSkillTypes] = useState([]);
@@ -15,31 +14,42 @@ export default function SearchController() {
 
     useEffect(() => {
         const fetchData = async () => {
-            const types = await fetchSkillTypes(); // pas besoin de token ici si API publique
+            const types = await fetchSkillTypes();
             setSkillTypes(types);
         };
         fetchData();
     }, []);
 
-    const handleSearch = async (filters) => {
-        const isEmpty = !filters.city && !filters.skillType && !filters.startDate && !filters.endDate && !filters.distanceKm;
-        if (isEmpty) {
+    const handleSearch = async (searchCriteria) => {
+        console.log("Critères reçus dans SearchController:", searchCriteria);
+        
+        // Vérification qu'au moins un critère est renseigné
+        const hasSkillType = searchCriteria.skillTypeIds && searchCriteria.skillTypeIds.length > 0;
+        const hasCity = searchCriteria.city && searchCriteria.city.trim() !== "";
+        const hasAddress = searchCriteria.referenceAddress && searchCriteria.referenceAddress.trim() !== "";
+        const hasStartDate = searchCriteria.startDate && searchCriteria.startDate !== "";
+        const hasEndDate = searchCriteria.endDate && searchCriteria.endDate !== "";
+        const hasDistance = searchCriteria.distanceKm && searchCriteria.distanceKm > 0;
+
+        if (!hasSkillType && !hasCity && !hasAddress && !hasStartDate && !hasEndDate && !hasDistance) {
             setAllMissions([]);
             setModalMessage("Veuillez remplir au moins un critère de recherche.");
             setShowModal(true);
             return;
         }
 
+        // Préparation du payload pour l'API backend
         const payload = {
-            city: filters.city || null,
-            skillIds: filters.skillType ? [parseInt(filters.skillType, 10)] : null,
-            startDate: filters.startDate || null,
-            endDate: filters.endDate || null,
-            latitude: null,
-            longitude: null,
-            radiusKm: filters.distanceKm ? parseFloat(filters.distanceKm) : null,
-            volunteerId: null,
+            city: searchCriteria.city || null,
+            skillTypeIds: searchCriteria.skillTypeIds || [], 
+            startDate: searchCriteria.startDate || null,
+            endDate: searchCriteria.endDate || null,
+            userLatitude: null, 
+            userLongitude: null, 
+            radiusKm: searchCriteria.distanceKm || null,
         };
+
+        console.log("Payload envoyé au backend:", payload);
 
         try {
             const response = await fetch("http://localhost:8080/api/rest/search/filter", {
@@ -53,6 +63,7 @@ export default function SearchController() {
 
             if (!response.ok) {
                 const errorText = await response.text();
+                console.error("Erreur réponse:", errorText);
                 setAllMissions([]);
                 setModalMessage(errorText || "Erreur inconnue.");
                 setShowModal(true);
@@ -60,9 +71,11 @@ export default function SearchController() {
             }
 
             const data = await response.json();
+            console.log("Données reçues du backend:", data);
 
+            // Filtrage des missions selon leur statut
             const filtered = data.filter((mission) => {
-                const { label } = getMissionStatus(mission.startDate, mission.endDate);
+                const { label } = getMissionStatus(mission.period.startDate, mission.period.endDate);
                 return label === "À venir" || label === "En cours";
             });
 
@@ -73,12 +86,11 @@ export default function SearchController() {
 
             setAllMissions(filtered);
         } catch (err) {
-            console.error(err);
+            console.error("Erreur lors de la requête:", err);
             setModalMessage("Erreur lors de la requête.");
             setShowModal(true);
         }
     };
-
 
     const getMissionStatus = (start, end) => {
         const now = new Date();
@@ -103,6 +115,7 @@ export default function SearchController() {
                     message={modalMessage}
                     onClose={() => setShowModal(false)}
                 />
-            )}        </>
+            )}
+        </>
     );
 }

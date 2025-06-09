@@ -57,33 +57,38 @@ export default function SpaceController() {
     }, [id, token, role]);
 
     const updateUser = async (updatedFields) => {
-        const requestOptionsUpdate = {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(updatedFields),
-        };
-
-        try {
-            const response = await fetch(`${backUrl}/space/update/${id}`, requestOptionsUpdate);
-            if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
-
-            const updatedUser = await response.json();
-
-            setUserToDisplay(updatedUser);
-
-            setModalMessage("Modifications enregistrées !");
-            setShowModal(true);
-            return { success: true, message: "Modifications enregistrées", data: updatedUser };
-        } catch (error) {
-            console.error("Erreur update :", error);
-            setModalMessage("Erreur lors de la modification.");
-            setShowModal(true);
-            return { success: false };
-        }
+    const requestOptionsUpdate = {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updatedFields),
     };
+
+    try {
+        const response = await fetch(`${backUrl}/space/update/${id}`, requestOptionsUpdate);
+
+        let data;
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+            data = await response.json();
+        } else {
+            data = await response.text();
+        }
+
+        if (!response.ok) throw new Error(data);
+
+        setModalMessage("Modifications enregistrées !");
+        setShowModal(true);
+        return { success: true, message: data };
+    } catch (error) {
+        console.error("Erreur update :", error);
+        setModalMessage("Erreur lors de la modification.");
+        setShowModal(true);
+        return { success: false };
+    }
+};
 
     const addSkill = (skillToAdd) => {
         const requestOptionAddSkill = {

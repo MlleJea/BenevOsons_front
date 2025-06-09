@@ -2,172 +2,176 @@ import React, { useState } from "react";
 import { Row, Col, Form, Button, Container, Card } from "react-bootstrap";
 import MissionCard from "@components/MissionCard";
 import SearchField from "@components/SearchField";
-import { formatSearchStartDate,formatSearchEndDate } from "@utils/formatDate";
+import LocationSearch from "@components/LocationSearch";
+import { formatSearchStartDate, formatSearchEndDate } from "@utils/formatDate";
 
-export default function SearchView({ allMissions, skillTypes, getMissionStatus, onSearch }) {
-  const [filters, setFilters] = useState({
+export default function SearchView({ allMissions, skillTypes, getMissionStatus, onSearch, userAddresses = [] }) {
+
+  const initialFilters = {
     skillType: "",
-    
-    city: "",
-    distanceKm: "",
-    referenceAddress: "",
-    
     startDate: "",
     endDate: "",
-  });
+    location: {
+      type: "",
+      postalCode: "",
+      city: "",
+      selectedAddress: "",
+      radiusKm: "",
+      isValid: false
+    }
+  };
+
+  const [filters, setFilters] = useState(initialFilters);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSearch = () => {
-    if (filters.referenceAddress && !filters.distanceKm) {
-      alert("Veuillez spécifier un rayon de recherche avec l'adresse de référence");
-      return;
-    }
+  const handleLocationChange = (locationData) => {
+    setFilters((prev) => ({
+      ...prev,
+      location: locationData
+    }));
+  };
 
-    // Vérification qu'au moins un critère est renseigné
+  const handleReset = () => {
+    setFilters(initialFilters);
+  };
+
+  const handleSearch = () => {
     const hasSkillType = filters.skillType && filters.skillType !== "";
-    const hasCity = filters.city && filters.city.trim() !== "";
-    const hasAddress = filters.referenceAddress && filters.referenceAddress.trim() !== "";
     const hasStartDate = filters.startDate && filters.startDate !== "";
     const hasEndDate = filters.endDate && filters.endDate !== "";
+    const hasLocation = filters.location.isValid;
 
-    if (!hasSkillType && !hasCity && !hasAddress && !hasStartDate && !hasEndDate) {
+    if (!hasSkillType && !hasStartDate && !hasEndDate && !hasLocation) {
       alert("Veuillez entrer au moins un critère de recherche");
       return;
     }
 
+    let userLatitude = null;
+    let userLongitude = null;
+    let postalCode = null;
+
+    if (filters.location.isValid) {
+      if (filters.location.type === "myAddress") {
+        const selectedAddr = userAddresses.find(
+          (addr) => addr.id === parseInt(filters.location.selectedAddress)
+        );
+        if (selectedAddr) {
+          userLatitude = selectedAddr.latitude;
+          userLongitude = selectedAddr.longitude;
+        }
+      } else if (filters.location.type === "city") {
+        postalCode = filters.location.postalCode;
+      }
+    }
     const searchCriteria = {
       skillTypeIds: hasSkillType ? [parseInt(filters.skillType)] : [],
-      
-      city: hasCity ? filters.city : null,
-      referenceAddress: hasAddress ? filters.referenceAddress : null,
-      distanceKm: filters.distanceKm ? parseInt(filters.distanceKm) : null,
-      
       startDate: formatSearchStartDate(filters.startDate),
       endDate: formatSearchEndDate(filters.endDate),
+      postalCode: postalCode,
+      radiusKm: hasLocation ? parseInt(filters.location.radiusKm) : null,
+      userLatitude,
+      userLongitude,
     };
 
-    console.log("Critères de recherche envoyés:", searchCriteria);
     onSearch(searchCriteria);
   };
 
   return (
     <Container className="py-5">
       <h2 className="mb-4">Rechercher une mission</h2>
-      
+
       <Card className="p-4 shadow-sm mb-5">
         <Form>
-          {/* Section Compétences*/}
-          <Row className="g-3 mb-4">
-            <Col md={12}>
-              <h5 className="text-muted">Recherche par compétence</h5>
-              <small className="text-muted">
-                Trouvez des missions correspondant à vos compétences spécifiques
-              </small>
-            </Col>
-            <Col md={6}>
-              <Form.Group controlId="skillType">
-                <Form.Label>Type de compétence recherché</Form.Label>
-                <Form.Select 
-                  name="skillType" 
-                  value={filters.skillType} 
-                  onChange={handleChange}
-                >
-                  <option value="">Toutes les compétences</option>
-                  {skillTypes.map((skill) => (
-                    <option key={skill.idSkillType} value={skill.idSkillType}>
-                      {skill.label}
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
-            </Col>
-          </Row>
+          {/* Section Compétences */}
+          <div className="form-section">
+            <h5><i className="fa fa-tools"></i> Recherche par compétence</h5>
+            <small>Trouvez des missions correspondant à vos compétences spécifiques</small>
+            <Row className="g-3 mt-2">
+              <Col md={6}>
+                <Form.Group controlId="skillType">
+                  <Form.Label><i className="fa fa-cogs"></i> Type de compétence recherché</Form.Label>
+                  <Form.Select
+                    name="skillType"
+                    value={filters.skillType}
+                    onChange={handleChange}
+                  >
+                    <option value="">Toutes les compétences</option>
+                    {skillTypes.map((skill) => (
+                      <option key={skill.idSkillType} value={skill.idSkillType}>
+                        {skill.label}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+            </Row>
+          </div>
 
           <hr />
 
           {/* Section Disponibilités */}
-          <Row className="g-3 mb-4">
-            <Col md={12}>
-              <h5 className="text-muted">Recherche par disponibilités</h5>
-              <small className="text-muted">
-                Filtrez selon vos créneaux de disponibilité
-              </small>
-            </Col>
-            <Col md={6}>
-              <SearchField
-                label="Date de début souhaitée"
-                name="startDate"
-                type="date"
-                value={filters.startDate}
-                onChange={handleChange}
-              />
-            </Col>
-            <Col md={6}>
-              <SearchField
-                label="Date de fin souhaitée"
-                name="endDate"
-                type="date"
-                value={filters.endDate}
-                onChange={handleChange}
-              />
-            </Col>
-          </Row>
+          <div className="form-section">
+            <h5><i className="fa fa-calendar"></i> Recherche par disponibilités</h5>
+            <small>Filtrez selon vos créneaux de disponibilité</small>
+            <Row className="g-3 mt-2">
+              <Col md={6}>
+                <SearchField
+                  label="Date de début souhaitée"
+                  name="startDate"
+                  type="date"
+                  value={filters.startDate}
+                  onChange={handleChange}
+                />
+              </Col>
+              <Col md={6}>
+                <SearchField
+                  label="Date de fin souhaitée"
+                  name="endDate"
+                  type="date"
+                  value={filters.endDate}
+                  onChange={handleChange}
+                />
+              </Col>
+            </Row>
+          </div>
 
           <hr />
 
-          {/* Section Localisation  */}
-          <Row className="g-3 mb-4">
-            <Col md={12}>
-              <h5 className="text-muted">Recherche par localisation géographique</h5>
-              <small className="text-muted">
-                Trouvez des missions près de chez vous avec un rayon personnalisable
-              </small>
-            </Col>
-            <Col md={4}>
-              <SearchField 
-                label="Ville" 
-                name="city" 
-                value={filters.city} 
-                onChange={handleChange}
-                placeholder="Ex: Lyon, Paris..."
+          {/* Section Localisation */}
+          <div className="form-section">
+            <h5><i className="fa fa-map-marker-alt"></i> Recherche par localisation géographique</h5>
+            <small>Trouvez des missions près de chez vous avec un rayon personnalisable</small>
+            <div className="mt-3">
+              <LocationSearch
+                onLocationChange={handleLocationChange}
+                userAddresses={userAddresses}
+                value={filters.location}
               />
-            </Col>
-            <Col md={4}>
-              <SearchField
-                label="Adresse de référence (optionnel)"
-                name="referenceAddress"
-                value={filters.referenceAddress}
-                onChange={handleChange}
-                placeholder="10 rue de Paris, Lyon"
-              />
-            </Col>
-            <Col md={4}>
-              <SearchField
-                label="Rayon de recherche (km)"
-                name="distanceKm"
-                type="number"
-                value={filters.distanceKm}
-                onChange={handleChange}
-                placeholder="Ex: 10, 25, 50"
-                min="1"
-                max="100"
-              />
-            </Col>
-          </Row>
+            </div>
+          </div>
 
-          <Row>
+          {/* Boutons d'action */}
+          <Row className="mt-4">
             <Col md={12} className="text-center">
-              <Button 
-                variant="primary" 
-                size="lg"
+              <Button
+                variant="primary"
+                size="md"
                 onClick={handleSearch}
-                className="px-5"
+                className="px-5 me-3"
               >
-                🔍 Rechercher des missions
+                Rechercher des missions
+              </Button>
+              <Button
+                variant="outline-secondary"
+                size="md"
+                onClick={handleReset}
+                className="px-4"
+              >
+                Réinitialiser les filtres
               </Button>
             </Col>
           </Row>
@@ -178,15 +182,15 @@ export default function SearchView({ allMissions, skillTypes, getMissionStatus, 
       <div className="mb-3">
         <h4>Résultats de recherche ({allMissions.length} mission{allMissions.length > 1 ? 's' : ''} trouvée{allMissions.length > 1 ? 's' : ''})</h4>
       </div>
-      
+
       <Row xs={1} md={2} lg={3} className="g-4">
         {allMissions.length > 0 ? (
           allMissions.map((mission) => (
             <Col key={mission.missionId || mission.id}>
-              <MissionCard 
-                mission={mission} 
-                getMissionStatus={getMissionStatus} 
-                showApplyButton={true} 
+              <MissionCard
+                mission={mission}
+                getMissionStatus={getMissionStatus}
+                showApplyButton={true}
               />
             </Col>
           ))

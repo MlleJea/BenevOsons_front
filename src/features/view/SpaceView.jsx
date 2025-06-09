@@ -23,12 +23,11 @@ export default function SpaceView({
     }
 
     const [errors, setErrors] = useState({});
-
-    const [profilFields, setProfilFields] = useState({
-        phoneNumber: "",
-        password: "",
-        passwordConfirmation: "",
-        addressList: {
+    
+    // Valeurs initiales (pour comparaison)
+    const [initialValues] = useState({
+        phoneNumber: user.phoneNumber || "",
+        addressList: user.userAddressList?.[0] || {
             streetNumber: "",
             streetName: "",
             postalCode: "",
@@ -36,30 +35,31 @@ export default function SpaceView({
         },
     });
 
-    useEffect(() => {
-        if (user) {
-            const firstAddress = user.userAddressList?.[0] || {};
-            setProfilFields((prev) => {
-                if (prev.phoneNumber || prev.addressList.streetName) return prev;
+    // Valeurs actuelles du formulaire
+    const [profilFields, setProfilFields] = useState({
+        phoneNumber: user.phoneNumber || "",
+        password: "",
+        passwordConfirmation: "",
+        addressList: user.userAddressList?.[0] || {
+            streetNumber: "",
+            streetName: "",
+            postalCode: "",
+            city: "",
+        },
+    });
 
-                return {
-                    phoneNumber: user.phoneNumber || "",
-                    password: "",
-                    passwordConfirmation: "",
-                    addressList: {
-                        streetNumber: firstAddress.streetNumber || "",
-                        streetName: firstAddress.streetName || "",
-                        postalCode: firstAddress.postalCode || "",
-                        city: firstAddress.city || "",
-                    },
-                };
-            });
-        }
-    }, [user]);
+    const [displayedSkills, setDisplayedSkills] = useState(skills || []);
+
+    useEffect(() => {
+        setDisplayedSkills(skills || []);
+    }, [skills]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setProfilFields((prev) => ({ ...prev, [name]: value }));
+        if (errors[name]) {
+            setErrors((prev) => ({ ...prev, [name]: null }));
+        }
     };
 
     const handleAddressChange = (newAddress) => {
@@ -70,8 +70,6 @@ export default function SpaceView({
     };
 
     const handleDeleteAddress = () => {
-        console.log("Supprimer l'adresse (à brancher)");
-        // Tu peux vider l'adresse ou la supprimer côté serveur
         setProfilFields((prev) => ({
             ...prev,
             addressList: {
@@ -86,18 +84,18 @@ export default function SpaceView({
     const handleProfileSubmit = () => {
         const newErrors = {};
 
-        if (!validateFrenchPhone(profilFields.phoneNumber)) {
-            newErrors.phoneNumber = "Numéro invalide (format attendu : 06 XX XX XX XX)";
+        // Validation uniquement si les champs sont remplis
+        if (profilFields.phoneNumber) {
+            const phoneError = validateFrenchPhone(profilFields.phoneNumber);
+            if (phoneError) newErrors.phoneNumber = phoneError;
         }
 
         if (profilFields.password) {
-            if (!validatePassword(profilFields.password)) {
-                newErrors.password = "Le mot de passe est trop faible";
-            }
-
-            if (!validateConfirmPassword(profilFields.password, profilFields.passwordConfirmation)) {
-                newErrors.passwordConfirmation = "Les mots de passe ne correspondent pas";
-            }
+            const passwordError = validatePassword(profilFields.password);
+            if (passwordError) newErrors.password = passwordError;
+            
+            const confirmError = validateConfirmPassword(profilFields.password, profilFields.passwordConfirmation);
+            if (confirmError) newErrors.passwordConfirmation = confirmError;
         }
 
         setErrors(newErrors);
@@ -106,31 +104,45 @@ export default function SpaceView({
             return;
         }
 
-        const dataToUpdate = {
-            phoneNumber: profilFields.phoneNumber,
-            addressList: [profilFields.addressList],
-        };
+        const dataToUpdate = {};
 
-        if (profilFields.password) {
+        // Téléphone : si différent de l'initial
+        if (profilFields.phoneNumber !== initialValues.phoneNumber) {
+            dataToUpdate.phoneNumber = profilFields.phoneNumber;
+        }
+
+        // Adresse : si au moins un champ d'adresse a changé
+        const addressChanged = 
+            profilFields.addressList.streetNumber !== initialValues.addressList.streetNumber ||
+            profilFields.addressList.streetName !== initialValues.addressList.streetName ||
+            profilFields.addressList.postalCode !== initialValues.addressList.postalCode ||
+            profilFields.addressList.city !== initialValues.addressList.city;
+
+        if (addressChanged) {
+            dataToUpdate.addressList = [profilFields.addressList];
+        }
+
+        // Mot de passe : si rempli
+        if (profilFields.password.trim() !== "") {
             dataToUpdate.password = profilFields.password;
         }
 
+        if (Object.keys(dataToUpdate).length === 0) {
+            console.log("Aucune modification détectée");
+            return;
+        }
+
+        console.log("Données à envoyer :", dataToUpdate);
         updateUser(dataToUpdate);
     };
 
-    // Skills
+    // Skills 
     const [newSkill, setNewSkill] = useState({
         labelSkill: "",
         grade: "",
         skillTypeLabel: "",
         volunteerId: id,
     });
-
-    const [displayedSkills, setDisplayedSkills] = useState(skills || []);
-
-    useEffect(() => {
-        setDisplayedSkills(skills || []);
-    }, [skills]);
 
     const handleSkillChange = (e) => {
         const { name, value } = e.target;
@@ -218,31 +230,33 @@ export default function SpaceView({
                     {/* Mot de passe */}
                     <div className="mt-3">
                         <FormGroupRow
-                            label="Mot de passe"
+                            label="Nouveau mot de passe (optionnel)"
                             name="password"
                             type="password"
                             value={profilFields.password}
                             onChange={handleChange}
-                            placeholder="Nouveau mot de passe"
+                            placeholder=""
                             icon="fa-lock"
                             error={errors.password}
                         />
 
-                        <FormGroupRow
-                            label="Confirmer le mot de passe"
-                            name="passwordConfirmation"
-                            type="password"
-                            value={profilFields.passwordConfirmation}
-                            onChange={handleChange}
-                            placeholder="Confirmez le mot de passe"
-                            icon="fa-lock"
-                            error={errors.passwordConfirmation}
-                        />
+                        {profilFields.password && (
+                            <FormGroupRow
+                                label="Confirmer le mot de passe"
+                                name="passwordConfirmation"
+                                type="password"
+                                value={profilFields.passwordConfirmation}
+                                onChange={handleChange}
+                                placeholder="Confirmez le nouveau mot de passe"
+                                icon="fa-lock"
+                                error={errors.passwordConfirmation}
+                            />
+                        )}
                     </div>
 
                     <div className="text-center">
                         <Button variant="success" onClick={handleProfileSubmit}>
-                            Enregistrer
+                            Enregistrer les modifications
                         </Button>
                     </div>
                 </Card.Body>

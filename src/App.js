@@ -87,7 +87,7 @@ export default function App() {
                 as={Link}
                 eventKey="5"
                 to={"/search"}
-                hidden={user === null ||user.role !== "VOLUNTEER"}
+                hidden={user === null}
               >
                 <i className="fa fa-search me-2 navbar-icon"></i>
                 Recherche
@@ -110,7 +110,7 @@ export default function App() {
             <Route exact path="/register" element={<RegisterController />} />
             <Route exact path="/space" element={<SpaceController />} />
             <Route exact path="/mission" element={<MissionController />} />
-            <Route exact path="/search" element={<SearchController/>}/>
+            <Route exact path="/search" element={<SearchController />} />
           </Routes>
         </Container>
       </article>

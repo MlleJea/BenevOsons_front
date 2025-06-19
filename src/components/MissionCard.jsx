@@ -1,13 +1,57 @@
-import React from "react";
 import { Card, Badge, Button } from "react-bootstrap";
 import { formatMissionDateTime } from "@utils/formatDate";
+import { useState } from "react";
 
-export default function MissionCard({ mission, getMissionStatus }) {
+const getMissionStatus = (startDate, endDate) => {
+  const now = new Date();
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  if (now < start) return { label: "À venir", color: "success" };
+  if (now >= start && now <= end) return { label: "En cours", color: "warning" };
+  if (now > end) return { label: "Terminée", color: "danger" };
+  return { label: "Inconnu", color: "secondary" };
+};
+
+
+export default function MissionCard({ mission }) {
+  const [expanded, setExpanded] = useState(false);
   const status = getMissionStatus(mission.period.startDate, mission.period.endDate);
-  const showApplyButton = true;
+  const showApplyButton = false;
 
   const handleApply = () => {
+    // A faire pour postuler
   };
+
+  if (!expanded) {
+    return (
+      <Card id={mission.id} className="h-100 shadow-sm yellow-border position-relative">
+        <div className="position-absolute top-0 end-0 p-2">
+          <Badge bg={status.color}>{status.label}</Badge>
+        </div>
+        <Card.Body>
+          <Card.Title>{mission.title}</Card.Title>
+          <Card.Text>
+            <strong>Ville :</strong> {mission.address.city}
+          </Card.Text>
+          <div>
+            {mission.missionSkillsTypeList.map((skill, idx) => (
+              <span key={idx} className="badge me-1">
+                {skill.label}
+              </span>
+            ))}
+          </div>
+          <Button
+            className="mt-2"
+            variant="primary"
+            onClick={() => setExpanded(true)}
+          >
+            Voir les détails
+          </Button>
+        </Card.Body>
+      </Card>
+    );
+  }
 
   return (
     <Card id={mission.id} className="h-100 shadow-sm yellow-border position-relative">
@@ -27,22 +71,28 @@ export default function MissionCard({ mission, getMissionStatus }) {
           {formatMissionDateTime(mission.period.startDate, mission.period.endDate)}
         </Card.Text>
         <Card.Text>
-          <strong>Bénévoles recherchés:</strong> {mission.nbVolunteerSearch}
+          <strong>Bénévoles recherchés:</strong> {mission.numberVolunteerSearch}
         </Card.Text>
         <row className="flex text-center">
-        <div>
-          {mission.missionSkillsTypeList.map((skill, idx) => (
-            <span key={idx} className="badge me-1">
-              {skill.label}
-            </span>
-          ))}
-        </div>
-        {showApplyButton && (
-          <Button className="align-center" variant="success" onClick={handleApply}>
-            Postuler
-          </Button>
-        )}
+          <div>
+            {mission.missionSkillsTypeList.map((skill, idx) => (
+              <span key={idx} className="badge me-1">
+                {skill.label}
+              </span>
+            ))}
+          </div>
+          {showApplyButton && (
+            <Button className="align-center" variant="success" onClick={handleApply}>
+              Postuler
+            </Button>
+          )}
         </row>
+        <Button
+          className="mt-2"
+          variant="secondary"
+          onClick={() => setExpanded(false)} >
+          Masquer les détails
+        </Button>
       </Card.Body>
     </Card>
   );

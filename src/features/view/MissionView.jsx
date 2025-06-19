@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Row, Col, Card, Form, Button, Badge, FormSelect } from "react-bootstrap";
 import MissionCard from "@components/MissionCard";
 import AddressForm from "@components/AddressForm";
@@ -9,7 +9,7 @@ export default function MissionView({ addMission, missionsToDisplay, skillTypes 
     title: "",
     description: "",
     missionSkillsTypeList: [],
-    nbVolunteerSearch: "",
+    numberVolunteerSearch: "",
     address: {
       streetNumber: "",
       streetName: "",
@@ -62,7 +62,7 @@ export default function MissionView({ addMission, missionsToDisplay, skillTypes 
 
     if (!newMission.title) errors.title = "Le titre est requis.";
     if (!newMission.description) errors.description = "La description est requise.";
-    if (!newMission.nbVolunteerSearch) errors.nbVolunteerSearch = "Le nombre de bénévoles est requis.";
+    if (!newMission.numberVolunteerSearch) errors.numberVolunteerSearch = "Le nombre de bénévoles est requis.";
     if (!newMission.period.startDate) errors.startDate = "La date de début est requise.";
     if (!newMission.period.endDate) errors.endDate = "La date de fin est requise.";
     if (!newMission.missionSkillsTypeList || newMission.missionSkillsTypeList.length === 0) {
@@ -94,7 +94,7 @@ export default function MissionView({ addMission, missionsToDisplay, skillTypes 
       title: "",
       description: "",
       missionSkillsTypeList: [],
-      nbVolunteerSearch: "",
+      numberVolunteerSearch: "",
       address: {
         streetNumber: "",
         streetName: "",
@@ -131,17 +131,6 @@ export default function MissionView({ addMission, missionsToDisplay, skillTypes 
       ...prev,
       missionSkillsTypeList: prev.missionSkillsTypeList.filter(skill => skill.id !== idToRemove),
     }));
-  };
-
-  const getMissionStatus = (startDate, endDate) => {
-    const now = new Date();
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-
-    if (now < start) return { label: "À venir", color: "success" };
-    if (now >= start && now <= end) return { label: "En cours", color: "warning" };
-    if (now > end) return { label: "Terminée", color: "danger" };
-    return { label: "Inconnu", color: "secondary" };
   };
 
   const filteredMissions = displayMission.filter((mission) => {
@@ -183,13 +172,13 @@ export default function MissionView({ addMission, missionsToDisplay, skillTypes 
                 <Form.Label>Nombre de bénévoles recherchés</Form.Label>
                 <Form.Control
                   type="number"
-                  name="nbVolunteerSearch"
-                  value={newMission.nbVolunteerSearch}
+                  name="numberVolunteerSearch"
+                  value={newMission.numberVolunteerSearch}
                   min={1}
                   max={100}
                   onChange={handleInputChange}
                 />
-                {renderError("nbVolunteerSearch")}
+                {renderError("numberVolunteerSearch")}
               </Form.Group>
 
               <Form.Group className="mb-3">
@@ -300,10 +289,9 @@ export default function MissionView({ addMission, missionsToDisplay, skillTypes 
         {filteredMissions.length > 0 ? (
           <Row xs={1} md={2} lg={3} className="g-4">
             {filteredMissions.map((mission, index) => {
-              const status = getMissionStatus(mission.period.startDate, mission.period.endDate);
               return (
                 <Col key={index}>
-                  <MissionCard mission={mission} getMissionStatus={getMissionStatus} />
+                  <MissionCard mission={mission} />
                 </Col>
               );
             })}

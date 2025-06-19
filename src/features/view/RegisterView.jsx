@@ -1,7 +1,15 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Row, Col, Card, Form, Button } from "react-bootstrap";
 import FormGroupRow from "@components/FormGroupRow";
-import { validateEmail, validatePassword, validateConfirmPassword, validateFrenchPhone, validateRequiredText, validateDate, validateRNA } from "@utils/validationUtils";
+import {
+  validateEmail,
+  validatePassword,
+  validateConfirmPassword,
+  validateFrenchPhone,
+  validateRequiredText,
+  validateDate,
+  validateRNA
+} from "@utils/validationUtils";
 import AddressForm from "@components/AddressForm";
 
 export default function RegisterView(props) {

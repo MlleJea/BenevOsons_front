@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Row, Col, Card, Form, Button } from "react-bootstrap";
 import FormGroupRow from "@components/FormGroupRow";
 import AddressForm from "@components/AddressForm";
@@ -23,7 +23,8 @@ export default function SpaceView({
     }
 
     const [errors, setErrors] = useState({});
-    
+    const addressFormRef = useRef();
+
     // Valeurs initiales (pour comparaison)
     const [initialValues] = useState({
         phoneNumber: user.phoneNumber || "",
@@ -93,16 +94,21 @@ export default function SpaceView({
         if (profilFields.password) {
             const passwordError = validatePassword(profilFields.password);
             if (passwordError) newErrors.password = passwordError;
-            
+
             const confirmError = validateConfirmPassword(profilFields.password, profilFields.passwordConfirmation);
             if (confirmError) newErrors.passwordConfirmation = confirmError;
         }
 
+        if (addressFormRef.current && addressFormRef.current.validate) {
+            const addressError = addressFormRef.current.validate();
+            if (addressError) {
+                newErrors.address = addressError;
+            }
+        }
+
         setErrors(newErrors);
 
-        if (Object.keys(newErrors).length > 0) {
-            return;
-        }
+        if (Object.keys(newErrors).length > 0) return;
 
         const dataToUpdate = {};
 
@@ -112,7 +118,7 @@ export default function SpaceView({
         }
 
         // Adresse : si au moins un champ d'adresse a changé
-        const addressChanged = 
+        const addressChanged =
             profilFields.addressList.streetNumber !== initialValues.addressList.streetNumber ||
             profilFields.addressList.streetName !== initialValues.addressList.streetName ||
             profilFields.addressList.postalCode !== initialValues.addressList.postalCode ||
@@ -219,6 +225,7 @@ export default function SpaceView({
                     </h6>
                     <div className="address-form-container">
                         <AddressForm
+                            ref={addressFormRef}
                             address={profilFields.addressList}
                             onChange={handleAddressChange}
                             onDelete={handleDeleteAddress}

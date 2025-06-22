@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Row, Col, Card, Form, Button, Badge, FormSelect } from "react-bootstrap";
 import MissionCard from "@components/MissionCard";
 import AddressForm from "@components/AddressForm";
 import { formatLocalDateTimeForBackend, updateMissionDateTime } from "@utils/formatDate";
+import { getMissionStatus } from "../../utils/missionUtils";
 
 export default function MissionView({ addMission, missionsToDisplay, skillTypes }) {
   const [newMission, setNewMission] = useState({
@@ -22,6 +23,7 @@ export default function MissionView({ addMission, missionsToDisplay, skillTypes 
       endDate: "",
     },
   });
+  const [userType, setUserType] = useState(null);
 
   const addressFormRef = useRef();
   const [displayMission, setDisplayedMission] = useState(missionsToDisplay || []);
@@ -140,7 +142,7 @@ export default function MissionView({ addMission, missionsToDisplay, skillTypes 
 
   return (
     <>
-      <Row className="flex justify-content-center p-4">
+      {userType === "organization" && ( <Row className="flex justify-content-center p-4">
         <Card className="p-4 w-75 mb-4 yellow-border">
           <Card.Header className="title yellow-border align-text-center">Ajouter une mission</Card.Header>
           <Card.Body>
@@ -273,6 +275,7 @@ export default function MissionView({ addMission, missionsToDisplay, skillTypes 
           </Card.Body>
         </Card>
       </Row>
+      )}
 
       <Row className="justify-content-center p-4">
         <Form.Label>Filtrer les missions</Form.Label>

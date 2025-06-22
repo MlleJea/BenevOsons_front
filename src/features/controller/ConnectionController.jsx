@@ -15,6 +15,7 @@ export default function ConnectionController() {
     const [message, setMessage] = useState("");
 
     async function authenticate(email, password) {
+        console.log(email,password);
         try {
             const response = await fetch(`${backUrl}/authenticate`, {
                 method: "POST",

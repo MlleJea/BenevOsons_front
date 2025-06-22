@@ -1,17 +1,7 @@
 import { Card, Badge, Button } from "react-bootstrap";
 import { formatMissionDateTime } from "@utils/formatDate";
-import { useState } from "react";
-
-const getMissionStatus = (startDate, endDate) => {
-  const now = new Date();
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-
-  if (now < start) return { label: "À venir", color: "success" };
-  if (now >= start && now <= end) return { label: "En cours", color: "warning" };
-  if (now > end) return { label: "Terminée", color: "danger" };
-  return { label: "Inconnu", color: "secondary" };
-};
+import React,{ useState } from "react";
+import { getMissionStatus } from "../utils/missionUtils";
 
 
 export default function MissionCard({ mission }) {

@@ -16,6 +16,7 @@ export default function RegisterController() {
     const [success, setSuccess] = useState(false);
 
     async function register(fields) {
+        console.log(fields);
         try {
             const response = await fetch(`${backUrl}/register`, {
                 method: "POST",

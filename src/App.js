@@ -78,7 +78,8 @@ export default function App() {
                 as={Link}
                 eventKey="4"
                 to="/mission"
-                hidden={user === null || user.role !== "ORGANIZATION"}
+                hidden={user === null}
+
               >
                 <i className="fa fa-crosshairs me-2 navbar-icon"></i>
                 Missions
@@ -87,7 +88,8 @@ export default function App() {
                 as={Link}
                 eventKey="5"
                 to={"/search"}
-                hidden={user === null}
+                hidden={user === null || user.role !== "VOLUNTEER"}
+
               >
                 <i className="fa fa-search me-2 navbar-icon"></i>
                 Recherche

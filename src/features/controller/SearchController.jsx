@@ -52,6 +52,7 @@ export default function SearchController() {
 
     // Fonction de recherche
     const onSearch = async (searchCriteria) => {
+        console.log(searchCriteria);
         try {
             const response = await fetch(`${backUrl}/search/filter`, {
                 method: "POST",

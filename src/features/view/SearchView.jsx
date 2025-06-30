@@ -53,6 +53,11 @@ export default function SearchView({ allMissions, skillTypes, getMissionStatus, 
     let userLatitude = null;
     let userLongitude = null;
     let postalCode = null;
+    let radiusKm = null;
+
+    if (hasLocation){
+      radiusKm = parseInt(filters.location.radiusKm);
+    }
 
     if (filters.location.isValid) {
       if (filters.location.type === "myAddress") {
@@ -72,7 +77,7 @@ export default function SearchView({ allMissions, skillTypes, getMissionStatus, 
       startDate: formatSearchStartDate(filters.startDate),
       endDate: formatSearchEndDate(filters.endDate),
       postalCode: postalCode,
-      radiusKm: hasLocation ? parseInt(filters.location.radiusKm) : null,
+      radiusKm: radiusKm,
       userLatitude,
       userLongitude,
     };

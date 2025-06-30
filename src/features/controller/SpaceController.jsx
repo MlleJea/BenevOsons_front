@@ -17,7 +17,7 @@ export default function SpaceController() {
     const [modalMessage, setModalMessage] = useState("");
     const [showModal, setShowModal] = useState(false);
 
-    const id = contextUser.id;
+    const id = contextUser.id || null;
     const token = contextUser.token;
     const role = contextUser.role;
 

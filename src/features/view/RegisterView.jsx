@@ -15,6 +15,7 @@ import AddressForm from "@components/AddressForm";
 export default function RegisterView(props) {
   const [userType, setUserType] = useState(null);
   const [errors, setErrors] = useState({});
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
   const addressFormRef = useRef();
 
   const [fields, setFields] = useState({
@@ -39,6 +40,48 @@ export default function RegisterView(props) {
     setFields((prevFields) => ({
       ...prevFields,
       [name]: value || "",
+    }));
+
+    if (hasAttemptedSubmit) {
+      validateField(name, value);
+    }
+  };
+
+  // Fonction pour valider un champ spécifique
+  const validateField = (fieldName, value) => {
+    let fieldError = null;
+
+    switch (fieldName) {
+      case 'email':
+        fieldError = validateEmail(value);
+        break;
+      case 'password':
+        fieldError = validatePassword(value);
+        break;
+      case 'confirmationPassword':
+        fieldError = validateConfirmPassword(fields.password, value);
+        break;
+      case 'phoneNumber':
+        fieldError = validateFrenchPhone(value);
+        break;
+      case 'name':
+        fieldError = validateRequiredText(value, "Le nom", 120);
+        break;
+      case 'birthDate':
+        if (userType === "volunteer") {
+          fieldError = validateDate(value, "La date de naissance");
+        }
+        break;
+      case 'rna':
+        if (userType === "organization") {
+          fieldError = validateRNA(value);
+        }
+        break;
+    }
+
+    setErrors(prevErrors => ({
+      ...prevErrors,
+      [fieldName]: fieldError
     }));
   };
 
@@ -77,7 +120,6 @@ export default function RegisterView(props) {
       if (rnaError) newErrors.rna = rnaError;
     }
 
-    // Valider l'adresse via la ref
     const isAddressValid = await addressFormRef.current?.validateAddress();
     if (!isAddressValid) {
       newErrors.address = "Adresse invalide ou non reconnue.";
@@ -89,6 +131,8 @@ export default function RegisterView(props) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setHasAttemptedSubmit(true);
+
     const isValid = await validate();
     if (isValid) {
       const registrationData = {
@@ -104,61 +148,128 @@ export default function RegisterView(props) {
       <Card className="max-width-50-rem p-0">
         <Card.Header className="text-center">Inscription</Card.Header>
 
-        <Row className="text-center p-3">
-          <Col>
-            <Button
-              variant={userType === "volunteer" ? "primary" : "outline-primary"}
-              onClick={() => {
-                setUserType("volunteer");
-                setFields((prevFields) => ({ ...prevFields, roleName: "VOLUNTEER" }));
-              }}
-            >
-              Je suis Bénévole
-            </Button>
-          </Col>
-          <Col>
-            <Button
-              variant={userType === "organization" ? "primary" : "outline-primary"}
-              onClick={() => {
-                setUserType("organization");
-                setFields((prevFields) => ({ ...prevFields, roleName: "ORGANIZATION" }));
-              }}
-            >
-              Je suis une Association
-            </Button>
-          </Col>
-        </Row>
+        {!userType && (
+          <Row className="text-center p-3">
+            <Col>
+              <Button
+                variant={userType === "volunteer" ? "primary" : "outline-primary"}
+                onClick={() => {
+                  setUserType("volunteer");
+                  setFields((prevFields) => ({ ...prevFields, roleName: "VOLUNTEER" }));
+                }}
+              >
+                Je suis Bénévole
+              </Button>
+            </Col>
+            <Col>
+              <Button
+                variant={userType === "organization" ? "primary" : "outline-primary"}
+                onClick={() => {
+                  setUserType("organization");
+                  setFields((prevFields) => ({ ...prevFields, roleName: "ORGANIZATION" }));
+                }}
+              >
+                Je suis une Association
+              </Button>
+            </Col>
+          </Row>
+        )}
 
         {userType && (
-          <Form onSubmit={handleSubmit} className="p-3">
-            <FormGroupRow label="Email" name="email" type="email" icon="fa-at" value={fields.email} onChange={handleChange} error={errors.email} placeholder="ex : exemple@mail.com" />
+          <Form onSubmit={handleSubmit} className="p-3" noValidate>
+            <FormGroupRow
+              label="Email"
+              name="email"
+              type="email"
+              icon="fa-at"
+              value={fields.email}
+              onChange={handleChange}
+              error={errors.email}
+              placeholder="ex : exemple@mail.com"
+            />
 
-            <FormGroupRow label="Mot de passe" name="password" type="password" icon="fa-key" value={fields.password} onChange={handleChange} error={errors.password} placeholder="Votre mot de passe" />
+            <FormGroupRow
+              label="Mot de passe"
+              name="password"
+              type="password"
+              icon="fa-key"
+              value={fields.password}
+              onChange={handleChange}
+              error={errors.password}
+              placeholder="Votre mot de passe"
+            />
 
-            <FormGroupRow label="Confirmez votre mot de passe" name="confirmationPassword" type="password" icon="fa-key" value={fields.confirmationPassword} onChange={handleChange} error={errors.confirmationPassword} placeholder="Confirmez votre mot de passe" />
+            <FormGroupRow
+              label="Confirmez votre mot de passe"
+              name="confirmationPassword"
+              type="password"
+              icon="fa-key"
+              value={fields.confirmationPassword}
+              onChange={handleChange}
+              error={errors.confirmationPassword}
+              placeholder="Confirmez votre mot de passe"
+            />
 
-            <FormGroupRow label="Numéro de téléphone" name="phoneNumber" type="tel" icon="fa-phone" value={fields.phoneNumber} onChange={handleChange} error={errors.phoneNumber} placeholder="ex : 0600000000" />
+            <FormGroupRow
+              label="Numéro de téléphone"
+              name="phoneNumber"
+              type="tel"
+              icon="fa-phone"
+              value={fields.phoneNumber}
+              onChange={handleChange}
+              error={errors.phoneNumber}
+              placeholder="ex : 0600000000"
+            />
 
-            <FormGroupRow label="Nom" name="name" type="text" icon="fa-user" value={fields.name} onChange={handleChange} error={errors.name} placeholder="ex : Marie DUPONT" />
+            <FormGroupRow
+              label="Nom"
+              name="name"
+              type="text"
+              icon="fa-user"
+              value={fields.name}
+              onChange={handleChange}
+              error={errors.name}
+              placeholder="ex : Marie DUPONT"
+            />
 
             {userType === "volunteer" && (
-              <FormGroupRow label="Date de naissance" name="birthDate" type="date" icon="fa-cake-candles" value={fields.birthDate} onChange={handleChange} error={errors.birthDate} />
+              <FormGroupRow
+                label="Date de naissance"
+                name="birthDate"
+                type="date"
+                icon="fa-cake-candles"
+                value={fields.birthDate}
+                onChange={handleChange}
+                error={errors.birthDate}
+              />
             )}
 
             {userType === "organization" && (
-              <FormGroupRow label="RNA" name="rna" type="text" icon="fa-book" value={fields.rna} onChange={handleChange} error={errors.rna} placeholder="ex : W123456789" />
+              <FormGroupRow
+                label="RNA"
+                name="rna"
+                type="text"
+                icon="fa-book"
+                value={fields.rna}
+                onChange={handleChange}
+                error={errors.rna}
+                placeholder="ex : W123456789"
+              />
             )}
 
             {/* Adresse complète via AddressForm */}
-            <div className="mt-3 mb-2">
-              <label className="form-label fw-bold">Adresse</label>
-              <AddressForm
-                ref={addressFormRef}
-                address={fields.addressList[0]}
-                onChange={handleAddressChange}
-              />
-              {errors.address && <div className="text-danger mt-1">{errors.address}</div>}
-            </div>
+            <Row className="ps-3 pe-3">
+              <Col sm={3}><output>Adresse</output></Col>
+              <Col sm={7}>
+                <AddressForm
+                  compact={true}
+                  ref={addressFormRef}
+                  address={fields.addressList[0]}
+                  onChange={handleAddressChange}
+                />
+                {errors.address && <div className="text-danger mt-1">{errors.address}</div>}
+              </Col>
+            </Row>
 
             <Row className="pb-3 pt-3">
               <Col className="text-center">

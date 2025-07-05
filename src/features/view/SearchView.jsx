@@ -3,6 +3,7 @@ import { Row, Col, Form, Button, Container, Card } from "react-bootstrap";
 import MissionCard from "@components/MissionCard";
 import SearchField from "@components/SearchField";
 import LocationSearch from "@components/LocationSearch";
+import PopupModal from "@components/PopupModal";
 import { formatSearchStartDate, formatSearchEndDate } from "@utils/formatDate";
 
 export default function SearchView({ allMissions, skillTypes, getMissionStatus, onSearch, userAddresses = [] }) {
@@ -16,12 +17,17 @@ export default function SearchView({ allMissions, skillTypes, getMissionStatus, 
       postalCode: "",
       city: "",
       selectedAddress: "",
+      userLatitude: null,
+      userLongitude: null,
       radiusKm: "",
       isValid: false
     }
   };
 
   const [filters, setFilters] = useState(initialFilters);
+  const [resetKey, setResetKey] = useState(0);
+  const [showModal, setShowModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -37,6 +43,17 @@ export default function SearchView({ allMissions, skillTypes, getMissionStatus, 
 
   const handleReset = () => {
     setFilters(initialFilters);
+    setResetKey(prev => prev + 1);
+  };
+
+  const showErrorModal = (message) => {
+    setModalMessage(message);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setModalMessage("");
   };
 
   const handleSearch = () => {
@@ -46,7 +63,7 @@ export default function SearchView({ allMissions, skillTypes, getMissionStatus, 
     const hasLocation = filters.location.isValid;
 
     if (!hasSkillType && !hasStartDate && !hasEndDate && !hasLocation) {
-      alert("Veuillez entrer au moins un critère de recherche");
+      showErrorModal("Veuillez entrer au moins un critère de recherche");
       return;
     }
 
@@ -55,14 +72,14 @@ export default function SearchView({ allMissions, skillTypes, getMissionStatus, 
     let postalCode = null;
     let radiusKm = null;
 
-    if (hasLocation){
+    if (hasLocation) {
       radiusKm = parseInt(filters.location.radiusKm);
     }
 
     if (filters.location.isValid) {
       if (filters.location.type === "myAddress") {
         const selectedAddr = userAddresses.find(
-          (addr) => addr.id === parseInt(filters.location.selectedAddress)
+          (addr) => addr.addressId === parseInt(filters.location.selectedAddress)
         );
         if (selectedAddr) {
           userLatitude = selectedAddr.latitude;
@@ -152,6 +169,7 @@ export default function SearchView({ allMissions, skillTypes, getMissionStatus, 
             <small>Trouvez des missions près de chez vous avec un rayon personnalisable</small>
             <div className="mt-3">
               <LocationSearch
+                key={resetKey}
                 onLocationChange={handleLocationChange}
                 userAddresses={userAddresses}
                 value={filters.location}
@@ -212,6 +230,12 @@ export default function SearchView({ allMissions, skillTypes, getMissionStatus, 
           </Col>
         )}
       </Row>
+      {showModal && (
+        <PopupModal 
+          message={modalMessage} 
+          onClose={closeModal} 
+        />
+      )}
     </Container>
   );
 }

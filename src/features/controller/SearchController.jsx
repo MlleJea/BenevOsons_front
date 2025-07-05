@@ -6,7 +6,6 @@ import { fetchSkillTypes } from "./ReferentielController";
 export default function SearchController() {
     const [contextUser] = useContext(myContext);
     
-    // Protection si le contexte n'est pas encore chargé
     if (!contextUser || !contextUser.token) {
         return <div>Chargement...</div>;
     }
@@ -52,7 +51,7 @@ export default function SearchController() {
 
     // Fonction de recherche
     const onSearch = async (searchCriteria) => {
-        console.log(searchCriteria);
+
         try {
             const response = await fetch(`${backUrl}/search/filter`, {
                 method: "POST",

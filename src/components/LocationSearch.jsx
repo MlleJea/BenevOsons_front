@@ -42,19 +42,38 @@ export default function LocationSearch({
 
   useEffect(() => {
     const radiusValid = radiusKm && !isNaN(radiusKm) && radiusKm > 0;
-    const isValid =
-      (searchType === "city" && city && postalCode.length === 5 && radiusValid) ||
-      (searchType === "myAddress" && selectedAddress && radiusValid);
 
-    onLocationChange({
+    console.log("=== DEBUG LOCATION SEARCH ===");
+    console.log("selectedAddress:", selectedAddress, "typeof:", typeof selectedAddress);
+    console.log("userAddresses:", userAddresses);
+    console.log("searchType:", searchType);
+    console.log("radiusKm:", radiusKm, "radiusValid:", radiusValid);
+
+    let locationData = {
       type: searchType,
       postalCode,
       city,
       selectedAddress,
       radiusKm,
-      isValid
-    });
-  }, [searchType, city, postalCode, selectedAddress, radiusKm]);
+      isValid: false,
+      userLatitude: null,
+      userLongitude: null
+    };
+    if (searchType === "city" && city && postalCode.length === 5 && radiusValid) {
+      locationData.isValid = true;
+    } else if (searchType === "myAddress" && selectedAddress && radiusValid) {
+      const selectedAddr = userAddresses.find(
+        (addr) => addr.addressId === parseInt(selectedAddress)
+      );
+      if (selectedAddr && selectedAddr.latitude && selectedAddr.longitude) {
+        locationData.userLatitude = selectedAddr.latitude;
+        locationData.userLongitude = selectedAddr.longitude;
+        locationData.isValid = true;
+      }
+    }
+
+    onLocationChange(locationData);
+  }, [searchType, city, postalCode, selectedAddress, radiusKm, userAddresses]);
 
   const handleSearchTypeChange = (type) => {
     setSearchType(type);
@@ -151,7 +170,7 @@ export default function LocationSearch({
               >
                 <option value="">Choisissez une de vos adresses</option>
                 {userAddresses.map((address) => (
-                  <option key={address.id} value={address.id}>
+                  <option key={address.addressId} value={address.addressId}>
                     {address.streetNumber} {address.streetName}, {address.postalCode} {address.city}
                   </option>
                 ))}

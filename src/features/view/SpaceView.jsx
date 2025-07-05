@@ -82,7 +82,7 @@ export default function SpaceView({
         }));
     };
 
-    const handleProfileSubmit = () => {
+    const handleProfileSubmit = async () => {
         const newErrors = {};
 
         // Validation uniquement si les champs sont remplis
@@ -99,10 +99,17 @@ export default function SpaceView({
             if (confirmError) newErrors.passwordConfirmation = confirmError;
         }
 
-        if (addressFormRef.current && addressFormRef.current.validate) {
-            const addressError = addressFormRef.current.validate();
-            if (addressError) {
-                newErrors.address = addressError;
+        //  Validation d'adresse si l'adresse a été modifiée
+        const addressChanged =
+            profilFields.addressList.streetNumber !== initialValues.addressList.streetNumber ||
+            profilFields.addressList.streetName !== initialValues.addressList.streetName ||
+            profilFields.addressList.postalCode !== initialValues.addressList.postalCode ||
+            profilFields.addressList.city !== initialValues.addressList.city;
+
+        if (addressChanged && addressFormRef.current && addressFormRef.current.validateAddress) {
+            const isAddressValid = await addressFormRef.current.validateAddress();
+            if (!isAddressValid) {
+                newErrors.address = "Veuillez vérifier l'adresse saisie";
             }
         }
 
@@ -118,12 +125,6 @@ export default function SpaceView({
         }
 
         // Adresse : si au moins un champ d'adresse a changé
-        const addressChanged =
-            profilFields.addressList.streetNumber !== initialValues.addressList.streetNumber ||
-            profilFields.addressList.streetName !== initialValues.addressList.streetName ||
-            profilFields.addressList.postalCode !== initialValues.addressList.postalCode ||
-            profilFields.addressList.city !== initialValues.addressList.city;
-
         if (addressChanged) {
             dataToUpdate.addressList = [profilFields.addressList];
         }
@@ -173,173 +174,226 @@ export default function SpaceView({
     };
 
     return (
-        <Row className="justify-content-center p-4">
-            <Card className="p-4 w-50 mb-4">
-                <Card.Header className="text-center">Mes informations</Card.Header>
-                <Card.Body>
-                    <Row className="mb-3">
-                        <Col className="profile-info-label">
-                            <i className="fa fa-envelope" /> Email: {user.email}
-                        </Col>
-                    </Row>
-                    <Row className="mb-3">
-                        <Col className="profile-info-label">
-                            <i className="fa fa-user" /> Nom: {user.name}
-                        </Col>
-                    </Row>
-                    {role === "VOLUNTEER" && (
-                        <Row className="mb-3">
-                            <Col className="profile-info-label">
-                                <i className="fa fa-birthday-cake" /> Date de naissance: {user.birthdate}
-                            </Col>
-                        </Row>
-                    )}
-                    {role === "ORGANIZATION" && (
-                        <Row className="mb-3">
-                            <Col className="profile-info-label">
-                                <i className="fa fa-id-card" /> RNA: {user.rna}
-                            </Col>
-                        </Row>
-                    )}
-                    <Row className="mb-3">
-                        <Col className="profile-info-label">
-                            <i className="fa fa-calendar" /> Inscription le: {user.registrationDate}
-                        </Col>
-                    </Row>
-
-                    {/* Téléphone */}
-                    <FormGroupRow
-                        label="Numéro de téléphone"
-                        name="phoneNumber"
-                        type="text"
-                        value={profilFields.phoneNumber}
-                        onChange={handleChange}
-                        placeholder="06 00 00 00 00"
-                        icon="fa-phone"
-                        error={errors.phoneNumber}
-                    />
-
-                    {/* Adresse */}
-                    <h6 className="mt-4 mb-2 profile-info-label">
-                        <i className="fa fa-home" /> Adresse
-                    </h6>
-                    <div className="address-form-container">
-                        <AddressForm
-                            ref={addressFormRef}
-                            address={profilFields.addressList}
-                            onChange={handleAddressChange}
-                            onDelete={handleDeleteAddress}
-                            isEditable={false}
-                            showActions={true}
-                        />
-                    </div>
-
-                    {/* Mot de passe */}
-                    <div className="mt-3">
-                        <FormGroupRow
-                            label="Nouveau mot de passe (optionnel)"
-                            name="password"
-                            type="password"
-                            value={profilFields.password}
-                            onChange={handleChange}
-                            placeholder=""
-                            icon="fa-lock"
-                            error={errors.password}
-                        />
-
-                        {profilFields.password && (
-                            <FormGroupRow
-                                label="Confirmer le mot de passe"
-                                name="passwordConfirmation"
-                                type="password"
-                                value={profilFields.passwordConfirmation}
-                                onChange={handleChange}
-                                placeholder="Confirmez le nouveau mot de passe"
-                                icon="fa-lock"
-                                error={errors.passwordConfirmation}
-                            />
-                        )}
-                    </div>
-
-                    <div className="text-center">
-                        <Button variant="success" onClick={handleProfileSubmit}>
-                            Enregistrer les modifications
-                        </Button>
-                    </div>
-                </Card.Body>
-            </Card>
-
-            {role === "VOLUNTEER" && (
-                <Card className="p-4 w-50">
-                    <Card.Header className="text-center">Mes compétences</Card.Header>
-                    <Card.Body>
-                        {displayedSkills.length > 0 ? (
-                            <ul className="list-group mb-3">
-                                {displayedSkills.map((skill, idx) => (
-                                    <li key={idx} className="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <strong>
-                                                {skill.skillType?.label || skill.skillTypeLabel} :{" "}
-                                            </strong>
-                                            {skill.labelSkill}
+        <div className="container-fluid p-4">
+            {/* === SECTION PROFIL === */}
+            <Row className="justify-content-center mb-4">
+                <Col xs={12} lg={10} xl={8}>
+                    <Card className="shadow-sm">
+                        <Card.Header className="text-center" style={{backgroundColor: 'rgba(255, 204, 0, 1)', color: 'rgba(245, 245, 245, 1)'}}>
+                            <i className="fa fa-user-circle me-2" style={{color: 'rgba(245, 245, 245, 1)'}}></i>
+                            Mes informations
+                        </Card.Header>
+                        <Card.Body className="p-4">
+                            {/* Informations non modifiables */}
+                            <Row className="mb-4">
+                                <Col xs={12} md={6}>
+                                    <div className="profile-info-label">
+                                        <i className="fa fa-envelope me-2"></i>
+                                        <strong>Email:</strong> {user.email}
+                                    </div>
+                                    <div className="profile-info-label">
+                                        <i className="fa fa-user me-2"></i>
+                                        <strong>Nom:</strong> {user.name}
+                                    </div>
+                                </Col>
+                                <Col xs={12} md={6}>
+                                    {role === "VOLUNTEER" && (
+                                        <div className="profile-info-label">
+                                            <i className="fa fa-birthday-cake me-2"></i>
+                                            <strong>Date de naissance:</strong> {user.birthdate}
                                         </div>
-                                        <span className="badge rounded-pill">{skill.grade}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p className="text-center text-muted">Aucune compétence ajoutée</p>
-                        )}
+                                    )}
+                                    {role === "ORGANIZATION" && (
+                                        <div className="profile-info-label">
+                                            <i className="fa fa-id-card me-2"></i>
+                                            <strong>RNA:</strong> {user.rna}
+                                        </div>
+                                    )}
+                                    <div className="profile-info-label">
+                                        <i className="fa fa-calendar me-2"></i>
+                                        <strong>Inscription le:</strong> {user.registrationDate}
+                                    </div>
+                                </Col>
+                            </Row>
 
-                        <div>Ajouter une compétence</div>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Type de compétence</Form.Label>
-                            <Form.Select
-                                name="skillTypeLabel"
-                                value={newSkill.skillTypeLabel}
-                                onChange={handleSkillChange}
-                            >
-                                <option value="">Choisir un type</option>
-                                {skillTypes.map((skillType, index) => (
-                                    <option key={index} value={skillType.label}>
-                                        {skillType.label}
-                                    </option>
-                                ))}
-                            </Form.Select>
-                        </Form.Group>
+                            <hr className="my-4" />
 
-                        <FormGroupRow
-                            label="Libellé"
-                            name="labelSkill"
-                            type="text"
-                            value={newSkill.labelSkill}
-                            onChange={handleSkillChange}
-                        />
+                            {/* Champs modifiables */}
+                            <FormGroupRow
+                                label="Numéro de téléphone"
+                                name="phoneNumber"
+                                type="text"
+                                value={profilFields.phoneNumber}
+                                onChange={handleChange}
+                                placeholder="06 00 00 00 00"
+                                icon="fa-phone"
+                                error={errors.phoneNumber}
+                            />
 
-                        <Form.Group className="mb-3">
-                            <Form.Label>Niveau</Form.Label>
-                            <Form.Select
-                                name="grade"
-                                value={newSkill.grade}
-                                onChange={handleSkillChange}
-                            >
-                                <option value="">Choisir un niveau</option>
-                                {grades.map((grade, index) => (
-                                    <option key={index} value={grade}>
-                                        {grade}
-                                    </option>
-                                ))}
-                            </Form.Select>
-                        </Form.Group>
+                            {/* Adresse */}
+                            <div className="mt-4">
+                                <h6 className="profile-info-label">
+                                    <i className="fa fa-home me-2"></i>
+                                    Adresse
+                                </h6>
+                                <div className="address-form-container">
+                                    <AddressForm
+                                        ref={addressFormRef}
+                                        address={profilFields.addressList}
+                                        onChange={handleAddressChange}
+                                        onDelete={handleDeleteAddress}
+                                        isEditable={false}
+                                        showActions={true}
+                                    />
+                                </div>
+                            </div>
 
-                        <div className="text-center">
-                            <Button variant="primary" onClick={handleAddSkill}>
-                                Ajouter une compétence
-                            </Button>
-                        </div>
-                    </Card.Body>
-                </Card>
+                            {/* Mot de passe */}
+                            <FormGroupRow
+                                label="Nouveau mot de passe (optionnel)"
+                                name="password"
+                                type="password"
+                                value={profilFields.password}
+                                onChange={handleChange}
+                                placeholder="Saisissez un nouveau mot de passe"
+                                icon="fa-lock"
+                                error={errors.password}
+                            />
+
+                            {profilFields.password && (
+                                <FormGroupRow
+                                    label="Confirmer le mot de passe"
+                                    name="passwordConfirmation"
+                                    type="password"
+                                    value={profilFields.passwordConfirmation}
+                                    onChange={handleChange}
+                                    placeholder="Confirmez le nouveau mot de passe"
+                                    icon="fa-lock"
+                                    error={errors.passwordConfirmation}
+                                />
+                            )}
+
+                            <div className="text-center mt-4">
+                                <Button size="lg" onClick={handleProfileSubmit}>
+                                    <i className="fa fa-save me-2"></i>
+                                    Enregistrer les modifications
+                                </Button>
+                            </div>
+                        </Card.Body>
+                    </Card>
+                </Col>
+            </Row>
+
+            {/* === SECTION COMPÉTENCES === */}
+            {role === "VOLUNTEER" && (
+                <Row className="justify-content-center">
+                    <Col xs={12} lg={10} xl={8}>
+                        <Card className="shadow-sm">
+                            <Card.Header className="text-center" style={{backgroundColor: 'rgba(255, 204, 0, 1)', color: 'rgba(245, 245, 245, 1)'}}>
+                                <i className="fa fa-star me-2" style={{color: 'rgba(245, 245, 245, 1)'}}></i>
+                                Mes compétences
+                            </Card.Header>
+                            <Card.Body className="p-4">
+                                {/* Liste des compétences existantes */}
+                                {displayedSkills.length > 0 ? (
+                                    <div className="mb-4">
+                                        <h6 className="title mb-3">
+                                            <i className="fa fa-list me-2"></i>
+                                            Compétences actuelles ({displayedSkills.length})
+                                        </h6>
+                                        <ul className="list-group mb-3">
+                                            {displayedSkills.map((skill, idx) => (
+                                                <li key={idx} className="list-group-item d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <strong>
+                                                            {skill.skillType?.label || skill.skillTypeLabel} :{" "}
+                                                        </strong>
+                                                        {skill.labelSkill}
+                                                    </div>
+                                                    <span className="badge rounded-pill">{skill.grade}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                ) : (
+                                    <p className="text-center text-muted">Aucune compétence ajoutée pour le moment</p>
+                                )}
+
+
+                                <hr className="my-4" />
+
+                                {/* Formulaire d'ajout de compétence */}
+                                <div>
+                                    <h6 className="title mb-3">
+                                        <i className="fa fa-plus-circle me-2"></i>
+                                        Ajouter une nouvelle compétence
+                                    </h6>
+                                    
+                                    <Row className="g-3">
+                                        <Col xs={12} md={6}>
+                                            <Form.Group>
+                                                <Form.Label>Type de compétence</Form.Label>
+                                                <Form.Select
+                                                    name="skillTypeLabel"
+                                                    value={newSkill.skillTypeLabel}
+                                                    onChange={handleSkillChange}
+                                                >
+                                                    <option value="">Choisir un type</option>
+                                                    {skillTypes.map((skillType, index) => (
+                                                        <option key={index} value={skillType.label}>
+                                                            {skillType.label}
+                                                        </option>
+                                                    ))}
+                                                </Form.Select>
+                                            </Form.Group>
+                                        </Col>
+                                        
+                                        <Col xs={12} md={6}>
+                                            <Form.Group>
+                                                <Form.Label>Niveau</Form.Label>
+                                                <Form.Select
+                                                    name="grade"
+                                                    value={newSkill.grade}
+                                                    onChange={handleSkillChange}
+                                                >
+                                                    <option value="">Choisir un niveau</option>
+                                                    {grades.map((grade, index) => (
+                                                        <option key={index} value={grade}>
+                                                            Niveau {grade}
+                                                        </option>
+                                                    ))}
+                                                </Form.Select>
+                                            </Form.Group>
+                                        </Col>
+                                        
+                                        <Col xs={12}>
+                                            <FormGroupRow
+                                                label="Libellé de la compétence"
+                                                name="labelSkill"
+                                                type="text"
+                                                value={newSkill.labelSkill}
+                                                onChange={handleSkillChange}
+                                                placeholder="Ex: Gestion de projet, Communication..."
+                                                icon="fa-tag"
+                                            />
+                                        </Col>
+                                    </Row>
+
+                                    <div className="text-center mt-4">
+                                        <Button 
+                                            onClick={handleAddSkill}
+                                            disabled={!newSkill.skillTypeLabel || !newSkill.labelSkill || !newSkill.grade}
+                                        >
+                                            <i className="fa fa-plus me-2"></i>
+                                            Ajouter cette compétence
+                                        </Button>
+                                    </div>
+                                </div>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                </Row>
             )}
-        </Row>
+        </div>
     );
 }

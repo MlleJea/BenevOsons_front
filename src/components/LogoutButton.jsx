@@ -11,13 +11,16 @@ export default function LogoutButton() {
 
   const logout = (e) => {
     e.preventDefault();
-    setShowModal(true); 
+    navigate("/welcome");
+    setShowModal(true);
   };
 
   const handleClose = () => {
     setShowModal(false);
-    navigate("/connection");
-    setUser(null);      
+    setTimeout(() => {
+      localStorage.clear();
+      setUser(null);
+    }, 0);
   };
 
   return (

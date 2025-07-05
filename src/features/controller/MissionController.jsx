@@ -82,6 +82,7 @@ export default function MissionController() {
                 addMission={addMission}
                 missionsToDisplay={missionToDisplay}
                 skillTypes={skillTypes}
+                role={role}
             />
             {showModal && (
                 <PopupModal message={modalMessage} onClose={() => setShowModal(false)} />

@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react";
-import { Row,Col,Card,InputGroup,Form,Nav } from "react-bootstrap";
+import { Row,Col,Card,InputGroup,Form,Nav,Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
 export default function ConnectionView(props){
@@ -9,7 +9,7 @@ export default function ConnectionView(props){
     return(
         <Row className="d-flex justify-content-center p-3 pt-5">
         <Card className="max-width-50-rem p-0">
-            <Card.Header className="text-center">Authentification</Card.Header>
+            <Card.Header className="title text-center">Authentification</Card.Header>
             <Row className="pt-4 ps-3 pe-3">
                 <Col sm={{ offset: 1, span: 10 }} md={3} lg={2}>
                     <output>Email</output>
@@ -50,13 +50,12 @@ export default function ConnectionView(props){
             </Row>
             <Row className="pb-3 ps-3 pe-3">
                 <Col sm={{ offset: 1, span: 10 }} lg={4} className="p-1">
-                    <Nav.Link
-                        className="btn  w-100 text-white"
-                        as={Link} to="/welcome"
+                    <Button
+                        className="w-100 text-white"
                         onClick={() => props.authenticate(fields.email, fields.password)}
                     >
                         Connexion
-                    </Nav.Link>
+                    </Button>
                 </Col>
                 <Col sm={{ offset: 1, span: 10 }} lg={4} className="p-1">
                     <Nav.Link 

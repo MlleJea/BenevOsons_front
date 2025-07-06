@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Row, Col, Card, Form, Button } from "react-bootstrap";
 import FormGroupRow from "@components/FormGroupRow";
+import PasswordStrengthIndicator from "@components/PasswordStrengthIndicator";
 import {
   validateEmail,
   validatePassword,
@@ -146,7 +147,7 @@ export default function RegisterView(props) {
   return (
     <Row className="d-flex justify-content-center p-3 pt-5">
       <Card className="max-width-50-rem p-0">
-        <Card.Header className="text-center">Inscription</Card.Header>
+        <Card.Header className="title text-center">Inscription</Card.Header>
 
         {!userType && (
           <Row className="text-center p-3">
@@ -188,16 +189,30 @@ export default function RegisterView(props) {
               placeholder="ex : exemple@mail.com"
             />
 
-            <FormGroupRow
-              label="Mot de passe"
-              name="password"
-              type="password"
-              icon="fa-key"
-              value={fields.password}
-              onChange={handleChange}
-              error={errors.password}
-              placeholder="Votre mot de passe"
-            />
+            <Row className="ps-3 pe-3 mb-3">
+              <Col sm={3}>
+                <output>Mot de passe</output>
+              </Col>
+              <Col sm={7}>
+                <div className="input-group">
+                  <span className="input-group-text">
+                    <i className="fa fa-key"></i>
+                  </span>
+                  <Form.Control
+                    type="password"
+                    name="password"
+                    value={fields.password}
+                    onChange={handleChange}
+                    placeholder="Votre mot de passe"
+                    isInvalid={!!errors.password}
+                  />
+                </div>
+                {errors.password && (
+                  <div className="text-danger mt-1">{errors.password}</div>
+                )}
+                <PasswordStrengthIndicator password={fields.password} />
+              </Col>
+            </Row>
 
             <FormGroupRow
               label="Confirmez votre mot de passe"

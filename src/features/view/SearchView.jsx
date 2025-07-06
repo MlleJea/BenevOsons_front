@@ -12,6 +12,7 @@ export default function SearchView({ allMissions, skillTypes, getMissionStatus, 
     skillType: "",
     startDate: "",
     endDate: "",
+    useEndDate: false, // Nouveau champ pour contrôler l'affichage
     location: {
       type: "",
       postalCode: "",
@@ -30,8 +31,18 @@ export default function SearchView({ allMissions, skillTypes, getMissionStatus, 
   const [modalMessage, setModalMessage] = useState("");
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFilters((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+
+    if (name === "useEndDate") {
+      setFilters((prev) => ({
+        ...prev,
+        [name]: checked,
+        // Réinitialiser la date de fin si on décoche
+        endDate: checked ? prev.endDate : ""
+      }));
+    } else {
+      setFilters((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleLocationChange = (locationData) => {
@@ -59,7 +70,7 @@ export default function SearchView({ allMissions, skillTypes, getMissionStatus, 
   const handleSearch = () => {
     const hasSkillType = filters.skillType && filters.skillType !== "";
     const hasStartDate = filters.startDate && filters.startDate !== "";
-    const hasEndDate = filters.endDate && filters.endDate !== "";
+    const hasEndDate = filters.useEndDate && filters.endDate && filters.endDate !== "";
     const hasLocation = filters.location.isValid;
 
     if (!hasSkillType && !hasStartDate && !hasEndDate && !hasLocation) {
@@ -89,21 +100,34 @@ export default function SearchView({ allMissions, skillTypes, getMissionStatus, 
         postalCode = filters.location.postalCode;
       }
     }
+
+    // Si on a une startDate mais pas d'endDate, utiliser startDate pour endDate
+    let searchEndDate = null;
+    if (filters.useEndDate && filters.endDate) {
+      searchEndDate = formatSearchEndDate(filters.endDate);
+    } else if (filters.startDate) {
+      // Utiliser startDate comme endDate si pas d'endDate spécifiée
+      searchEndDate = formatSearchEndDate(filters.startDate);
+    }
+
     const searchCriteria = {
       skillTypeIds: hasSkillType ? [parseInt(filters.skillType)] : [],
       startDate: formatSearchStartDate(filters.startDate),
-      endDate: formatSearchEndDate(filters.endDate),
+      endDate: searchEndDate,
       postalCode: postalCode,
       radiusKm: radiusKm,
       userLatitude,
       userLongitude,
     };
 
+    console.log(searchCriteria);
+
     onSearch(searchCriteria);
   };
 
   return (
     <Container className="py-5">
+
       <h2 className="mb-4">Rechercher une mission</h2>
 
       <Card className="p-4 shadow-sm mb-5">
@@ -149,15 +173,29 @@ export default function SearchView({ allMissions, skillTypes, getMissionStatus, 
                   onChange={handleChange}
                 />
               </Col>
-              <Col md={6}>
-                <SearchField
-                  label="Date de fin souhaitée"
-                  name="endDate"
-                  type="date"
-                  value={filters.endDate}
-                  onChange={handleChange}
-                />
+              <Col md={12}>
+                <Form.Group controlId="useEndDate" className="mb-3">
+                  <Form.Check
+                    type="checkbox"
+                    name="useEndDate"
+                    checked={filters.useEndDate}
+                    onChange={handleChange}
+                    label="Spécifier une date de fin (optionnel)"
+                    className="text-muted "
+                  />
+                </Form.Group>
               </Col>
+              {filters.useEndDate && (
+                <Col md={6}>
+                  <SearchField
+                    label="Date de fin souhaitée"
+                    name="endDate"
+                    type="date"
+                    value={filters.endDate}
+                    onChange={handleChange}
+                  />
+                </Col>
+              )}
             </Row>
           </div>
 
@@ -211,6 +249,7 @@ export default function SearchView({ allMissions, skillTypes, getMissionStatus, 
           allMissions.map((mission) => (
             <Col key={mission.missionId || mission.id}>
               <MissionCard
+                hideStatus={true}
                 mission={mission}
                 getMissionStatus={getMissionStatus}
                 showApplyButton={true}
@@ -231,9 +270,9 @@ export default function SearchView({ allMissions, skillTypes, getMissionStatus, 
         )}
       </Row>
       {showModal && (
-        <PopupModal 
-          message={modalMessage} 
-          onClose={closeModal} 
+        <PopupModal
+          message={modalMessage}
+          onClose={closeModal}
         />
       )}
     </Container>

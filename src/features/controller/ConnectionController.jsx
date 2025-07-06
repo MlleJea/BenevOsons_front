@@ -13,9 +13,9 @@ export default function ConnectionController() {
 
     const [showModal, setShowModal] = useState(false);
     const [message, setMessage] = useState("");
+    const [success, setSuccess] = useState(false);
 
     async function authenticate(email, password) {
-        console.log(email,password);
         try {
             const response = await fetch(`${backUrl}/authenticate`, {
                 method: "POST",
@@ -23,26 +23,54 @@ export default function ConnectionController() {
                 body: JSON.stringify({ email, password }),
             });
 
-            const data = await response.json();
-
             if (!response.ok) {
-                throw new Error(data?.message || "Email ou mot de passe incorrect.");
+                let errorMessage = "Erreur lors de la connexion.";
+                
+                try {
+                    const contentType = response.headers.get("content-type");
+                    if (contentType && contentType.includes("application/json")) {
+                        const errorData = await response.json();
+                        errorMessage = errorData?.message || errorData || errorMessage;
+                    } else {
+                        const errorText = await response.text();
+                        errorMessage = errorText || errorMessage;
+                    }
+                } catch (parseError) {
+                    console.error("Erreur lors du parsing de l'erreur:", parseError);
+                }
+                
+                throw new Error(errorMessage);
             }
 
+            const data = await response.json();
             setUser(data);
-            navigate("/welcome");
+            setMessage("Connexion réussie, bienvenue sur BénévOsons !");
+            setSuccess(true);
+            setShowModal(true);
+            
         } catch (err) {
             console.error("Erreur d'authentification :", err.message);
             setMessage(err.message);
+            setSuccess(false);
             setShowModal(true);
         }
     }
+
+    const handleCloseModal = () => {
+        setShowModal(false);
+        if (success) {
+            navigate("/welcome");
+        }
+    };
 
     return (
         <>
             <ConnectionView authenticate={authenticate} />
             {showModal && (
-                <PopupModal message={message} onClose={() => setShowModal(false)} />
+                <PopupModal 
+                    message={message} 
+                    onClose={handleCloseModal} 
+                />
             )}
         </>
     );

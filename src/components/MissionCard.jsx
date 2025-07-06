@@ -4,7 +4,7 @@ import React,{ useState } from "react";
 import { getMissionStatus } from "../utils/missionUtils";
 
 
-export default function MissionCard({ mission }) {
+export default function MissionCard({ mission, hideStatus = false }) {
   const [expanded, setExpanded] = useState(false);
   const status = getMissionStatus(mission.period.startDate, mission.period.endDate);
   const showApplyButton = false;
@@ -16,9 +16,11 @@ export default function MissionCard({ mission }) {
   if (!expanded) {
     return (
       <Card id={mission.id} className="h-100 shadow-sm yellow-border position-relative">
-        <div className="position-absolute top-0 end-0 p-2">
-          <Badge bg={status.color}>{status.label}</Badge>
-        </div>
+        {!hideStatus && (
+          <div className="position-absolute top-0 end-0 p-2">
+            <Badge bg={status.color}>{status.label}</Badge>
+          </div>
+        )}
         <Card.Body>
           <Card.Title>{mission.title}</Card.Title>
           <Card.Text>
@@ -45,9 +47,11 @@ export default function MissionCard({ mission }) {
 
   return (
     <Card id={mission.id} className="h-100 shadow-sm yellow-border position-relative">
-      <div className="position-absolute top-0 end-0 p-2">
-        <Badge bg={status.color}>{status.label}</Badge>
-      </div>
+      {!hideStatus && (
+        <div className="position-absolute top-0 end-0 p-2">
+          <Badge bg={status.color}>{status.label}</Badge>
+        </div>
+      )}
       <Card.Body>
         <Card.Title>{mission.title}</Card.Title>
         <Card.Text>{mission.description}</Card.Text>

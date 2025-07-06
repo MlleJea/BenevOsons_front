@@ -179,8 +179,7 @@ export default function SpaceView({
             <Row className="justify-content-center mb-4">
                 <Col xs={12} lg={10} xl={8}>
                     <Card className="shadow-sm">
-                        <Card.Header className="text-center" style={{backgroundColor: 'rgba(255, 204, 0, 1)', color: 'rgba(245, 245, 245, 1)'}}>
-                            <i className="fa fa-user-circle me-2" style={{color: 'rgba(245, 245, 245, 1)'}}></i>
+                        <Card.Header className="title text-center">
                             Mes informations
                         </Card.Header>
                         <Card.Body className="p-4">
@@ -289,8 +288,7 @@ export default function SpaceView({
                 <Row className="justify-content-center">
                     <Col xs={12} lg={10} xl={8}>
                         <Card className="shadow-sm">
-                            <Card.Header className="text-center" style={{backgroundColor: 'rgba(255, 204, 0, 1)', color: 'rgba(245, 245, 245, 1)'}}>
-                                <i className="fa fa-star me-2" style={{color: 'rgba(245, 245, 245, 1)'}}></i>
+                            <Card.Header className="title text-center">
                                 Mes compétences
                             </Card.Header>
                             <Card.Body className="p-4">

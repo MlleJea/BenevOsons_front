@@ -218,7 +218,7 @@ export default function MissionView({ addMission, missionsToDisplay, skillTypes,
                       Ajouter
                     </Button>
                   </Col>
-                </Row>
+                </Row>s
                 {renderError("missionSkillsTypeList")}
               </Form.Group>
 

@@ -10,7 +10,8 @@ module.exports = {
   },
   devServer: {
     historyApiFallback : true,
-    allowedHosts: ['.cheviron.org'],
+    // allowedHosts: ['.cheviron.org'],
+    disableHostCheck: true,
   },
   plugins: [
     new HtmlWebpackPlugin({

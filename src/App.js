@@ -23,6 +23,7 @@ export default function App() {
   return (
     <>
       <myContext.Provider value={[user, setUser]}>
+        <div className="app-wrapper">
         <header className="d-flex justify-content-center align-items-center">
           <h1>Benev</h1>
           <h1 className="pink">O</h1>
@@ -120,6 +121,7 @@ export default function App() {
         <footer className="d-flex justify-content-center align-items-center">
           <h6>BenevOsons - 2025</h6>
         </footer>
+        </div>
       </myContext.Provider>
     </>
   );

@@ -140,3 +140,21 @@ export const validateAddress = (address) => {
   
   return addressErrors;
 };
+
+export const validateMissionDates = (startDate, endDate) => {
+  const errors = {};
+  
+  if (!startDate) {
+    errors.startDate = "La date de début est requise.";
+  }
+  if (!endDate) {
+    errors.endDate = "La date de fin est requise.";
+  }
+  
+  if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+    errors.startDate = "La date de début doit être antérieure à la date de fin.";
+    errors.endDate = "La date de fin doit être postérieure à la date de début.";
+  }
+  
+  return errors;
+}

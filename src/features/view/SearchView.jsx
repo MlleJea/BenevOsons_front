@@ -5,9 +5,15 @@ import SearchField from "@components/SearchField";
 import LocationSearch from "@components/LocationSearch";
 import PopupModal from "@components/PopupModal";
 import { formatSearchStartDate, formatSearchEndDate } from "@utils/formatDate";
+import { validateMissionDates } from "@utils/validationUtils";
 
-export default function SearchView({ allMissions, skillTypes, getMissionStatus, onSearch, userAddresses}) {
-
+export default function SearchView({
+  allMissions,
+  skillTypes,
+  getMissionStatus,
+  onSearch,
+  userAddresses,
+}) {
   const initialFilters = {
     skillType: "",
     startDate: "",
@@ -23,8 +29,8 @@ export default function SearchView({ allMissions, skillTypes, getMissionStatus, 
       radiusKm: "",
       isValid: false,
       userLatitude: null,
-      userLongitude: null
-    }
+      userLongitude: null,
+    },
   };
 
   const [filters, setFilters] = useState(initialFilters);
@@ -40,7 +46,7 @@ export default function SearchView({ allMissions, skillTypes, getMissionStatus, 
         ...prev,
         [name]: checked,
         // Réinitialiser la date de fin si on décoche
-        endDate: checked ? prev.endDate : ""
+        endDate: checked ? prev.endDate : "",
       }));
     } else {
       setFilters((prev) => ({ ...prev, [name]: value }));
@@ -50,13 +56,13 @@ export default function SearchView({ allMissions, skillTypes, getMissionStatus, 
   const handleLocationChange = (locationData) => {
     setFilters((prev) => ({
       ...prev,
-      location: locationData
+      location: locationData,
     }));
   };
 
   const handleReset = () => {
     setFilters(initialFilters);
-    setResetKey(prev => prev + 1);
+    setResetKey((prev) => prev + 1);
   };
 
   const showErrorModal = (message) => {
@@ -72,8 +78,22 @@ export default function SearchView({ allMissions, skillTypes, getMissionStatus, 
   const handleSearch = () => {
     const hasSkillType = filters.skillType && filters.skillType !== "";
     const hasStartDate = filters.startDate && filters.startDate !== "";
-    const hasEndDate = filters.useEndDate && filters.endDate && filters.endDate !== "";
+    const hasEndDate =
+      filters.useEndDate && filters.endDate && filters.endDate !== "";
     const hasLocation = filters.location.isValid;
+
+    // Véficiation des dates
+    if (filters.startDate && filters.endDate) {
+      const dateErrors = validateMissionDates(
+        filters.startDate,
+        filters.endDate
+      );
+      if (Object.keys(dateErrors).length > 0) {
+        showErrorModal(
+          "Les dates de début et de fin ne sont pas valides. Veuillez vérifier."
+        );
+        return;
+        }
 
     if (!hasSkillType && !hasStartDate && !hasEndDate && !hasLocation) {
       showErrorModal("Veuillez entrer au moins un critère de recherche");
@@ -86,13 +106,14 @@ export default function SearchView({ allMissions, skillTypes, getMissionStatus, 
 
     if (hasLocation) {
       radiusKm = parseInt(filters.location.radiusKm);
-      userLatitude = parseFloat(filters.location.selectedAddress)
+      userLatitude = parseFloat(filters.location.selectedAddress);
     }
 
     if (filters.location.isValid) {
       if (filters.location.type === "myAddress") {
         const selectedAddr = userAddresses.find(
-          (addr) => addr.addressId === parseInt(filters.location.selectedAddress)
+          (addr) =>
+            addr.addressId === parseInt(filters.location.selectedAddress)
         );
         if (selectedAddr) {
           console.log(selectedAddr);
@@ -130,19 +151,24 @@ export default function SearchView({ allMissions, skillTypes, getMissionStatus, 
 
   return (
     <Container className="py-5">
-
       <h2 className="mb-4">Rechercher une mission</h2>
 
       <Card className="p-4 shadow-sm mb-5">
         <Form>
           {/* Section Compétences */}
           <div className="form-section">
-            <h5><i className="fa fa-tools"></i> Recherche par compétence</h5>
-            <small>Trouvez des missions correspondant à vos compétences spécifiques</small>
+            <h5>
+              <i className="fa fa-tools"></i> Recherche par compétence
+            </h5>
+            <small>
+              Trouvez des missions correspondant à vos compétences spécifiques
+            </small>
             <Row className="g-3 mt-2">
               <Col md={6}>
                 <Form.Group controlId="skillType">
-                  <Form.Label><i className="fa fa-cogs"></i> Type de compétence recherché</Form.Label>
+                  <Form.Label>
+                    <i className="fa fa-cogs"></i> Type de compétence recherché
+                  </Form.Label>
                   <Form.Select
                     name="skillType"
                     value={filters.skillType}
@@ -164,7 +190,9 @@ export default function SearchView({ allMissions, skillTypes, getMissionStatus, 
 
           {/* Section Disponibilités */}
           <div className="form-section">
-            <h5><i className="fa fa-calendar"></i> Recherche par disponibilités</h5>
+            <h5>
+              <i className="fa fa-calendar"></i> Recherche par disponibilités
+            </h5>
             <small>Filtrez selon vos créneaux de disponibilité</small>
             <Row className="g-3 mt-2">
               <Col md={6}>
@@ -206,8 +234,14 @@ export default function SearchView({ allMissions, skillTypes, getMissionStatus, 
 
           {/* Section Localisation */}
           <div className="form-section">
-            <h5><i className="fa fa-map-marker-alt"></i> Recherche par localisation géographique</h5>
-            <small>Trouvez des missions près de chez vous avec un rayon personnalisable</small>
+            <h5>
+              <i className="fa fa-map-marker-alt"></i> Recherche par
+              localisation géographique
+            </h5>
+            <small>
+              Trouvez des missions près de chez vous avec un rayon
+              personnalisable
+            </small>
             <div className="mt-3">
               <LocationSearch
                 key={resetKey}
@@ -233,6 +267,7 @@ export default function SearchView({ allMissions, skillTypes, getMissionStatus, 
                 variant="outline-secondary"
                 size="md"
                 onClick={handleReset}
+                isValid={validate}
                 className="px-4"
               >
                 Réinitialiser les filtres
@@ -244,7 +279,11 @@ export default function SearchView({ allMissions, skillTypes, getMissionStatus, 
 
       {/* Résultats de recherche */}
       <div className="mb-3">
-        <h4>Résultats de recherche ({allMissions.length} mission{allMissions.length > 1 ? 's' : ''} trouvée{allMissions.length > 1 ? 's' : ''})</h4>
+        <h4>
+          Résultats de recherche ({allMissions.length} mission
+          {allMissions.length > 1 ? "s" : ""} trouvée
+          {allMissions.length > 1 ? "s" : ""})
+        </h4>
       </div>
 
       <Row xs={1} md={2} lg={3} className="g-4">
@@ -263,7 +302,9 @@ export default function SearchView({ allMissions, skillTypes, getMissionStatus, 
           <Col md={12}>
             <Card className="text-center p-4">
               <Card.Body>
-                <p className="mb-0">Aucune mission ne correspond à ces critères de recherche.</p>
+                <p className="mb-0">
+                  Aucune mission ne correspond à ces critères de recherche.
+                </p>
                 <small className="text-muted">
                   Essayez d'élargir vos critères ou de modifier vos filtres.
                 </small>
@@ -272,12 +313,7 @@ export default function SearchView({ allMissions, skillTypes, getMissionStatus, 
           </Col>
         )}
       </Row>
-      {showModal && (
-        <PopupModal
-          message={modalMessage}
-          onClose={closeModal}
-        />
-      )}
+      {showModal && <PopupModal message={modalMessage} onClose={closeModal} />}
     </Container>
   );
 }

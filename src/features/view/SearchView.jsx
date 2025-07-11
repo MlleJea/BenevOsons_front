@@ -6,7 +6,7 @@ import LocationSearch from "@components/LocationSearch";
 import PopupModal from "@components/PopupModal";
 import { formatSearchStartDate, formatSearchEndDate } from "@utils/formatDate";
 
-export default function SearchView({ allMissions, skillTypes, getMissionStatus, onSearch, userAddresses = [] }) {
+export default function SearchView({ allMissions, skillTypes, getMissionStatus, onSearch, userAddresses}) {
 
   const initialFilters = {
     skillType: "",
@@ -21,7 +21,9 @@ export default function SearchView({ allMissions, skillTypes, getMissionStatus, 
       userLatitude: null,
       userLongitude: null,
       radiusKm: "",
-      isValid: false
+      isValid: false,
+      userLatitude: null,
+      userLongitude: null
     }
   };
 
@@ -77,14 +79,14 @@ export default function SearchView({ allMissions, skillTypes, getMissionStatus, 
       showErrorModal("Veuillez entrer au moins un critère de recherche");
       return;
     }
-
-    let userLatitude = null;
-    let userLongitude = null;
     let postalCode = null;
     let radiusKm = null;
+    let userLatitude = null;
+    let userLongitude = null;
 
     if (hasLocation) {
       radiusKm = parseInt(filters.location.radiusKm);
+      userLatitude = parseFloat(filters.location.selectedAddress)
     }
 
     if (filters.location.isValid) {
@@ -93,6 +95,7 @@ export default function SearchView({ allMissions, skillTypes, getMissionStatus, 
           (addr) => addr.addressId === parseInt(filters.location.selectedAddress)
         );
         if (selectedAddr) {
+          console.log(selectedAddr);
           userLatitude = selectedAddr.latitude;
           userLongitude = selectedAddr.longitude;
         }

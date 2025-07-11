@@ -9,7 +9,8 @@ module.exports = {
     publicPath:'/'
   },
   devServer: {
-    historyApiFallback : true
+    historyApiFallback : true,
+    allowedHosts: ['.cheviron.org'],
   },
   plugins: [
     new HtmlWebpackPlugin({

@@ -57,14 +57,6 @@ export default function ConnectionView(props){
                         Connexion
                     </Button>
                 </Col>
-                <Col sm={{ offset: 1, span: 10 }} lg={4} className="p-1">
-                    <Nav.Link 
-                    className="btn w-100 text-white"
-                    as={Link} to="/register"
-                    >
-                        S'inscrire
-                    </Nav.Link>
-                </Col>
             </Row>
         </Card>
     </Row>

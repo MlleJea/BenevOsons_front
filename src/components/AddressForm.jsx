@@ -21,6 +21,10 @@ const AddressForm = forwardRef(({
   const [cities, setCities] = useState([]);
   const [editing, setEditing] = useState(isEditable);
 
+  useEffect(() => {
+  setEditing(isEditable);
+}, [isEditable]);
+
   // Pour SpaceView : placeholders avec l'adresse actuelle
   useEffect(() => {
     setLocalAddress({
@@ -280,12 +284,7 @@ const AddressForm = forwardRef(({
         {showActions && (
           <div className="d-flex gap-2 mt-3">
             <Button size="sm" variant="success" onClick={() => setEditing(false)}>
-              <i className="fa fa-save me-1"></i>
               Enregistrer
-            </Button>
-            <Button size="sm" variant="secondary" onClick={() => setEditing(false)}>
-              <i className="fa fa-times me-1"></i>
-              Annuler
             </Button>
           </div>
         )}

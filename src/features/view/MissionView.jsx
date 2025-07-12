@@ -7,9 +7,11 @@ import {
   Button,
   Badge,
   FormSelect,
+  Container,
 } from "react-bootstrap";
 import MissionCard from "@components/MissionCard";
 import AddressForm from "@components/AddressForm";
+import FormGroupRow from "@components/FormGroupRow";
 import {
   formatLocalDateTimeForBackend,
   updateMissionDateTime,
@@ -77,7 +79,7 @@ export default function MissionView({
   };
 
   const handleAddMission = async () => {
-    const errors = {};
+    let errors = {};
 
     if (!newMission.title) errors.title = "Le titre est requis.";
     if (!newMission.description)
@@ -119,6 +121,10 @@ export default function MissionView({
       },
     };
 
+
+    console.log(missionToSend);
+
+    
     addMission(missionToSend);
 
     setNewMission({
@@ -155,15 +161,17 @@ export default function MissionView({
     );
     if (
       selectedSkill &&
-      !newMission.missionSkillsTypeList.find((s) => s.id === selectedSkill.id)
+      !newMission.missionSkillsTypeList.find((s) => s.idSkillType === selectedSkill.idSkillType)
     ) {
       setNewMission((prev) => ({
         ...prev,
         missionSkillsTypeList: [
           ...prev.missionSkillsTypeList,
-          { label: selectedSkill.label, id: selectedSkill.id },
+          { label: selectedSkill.label, idSkillType: selectedSkill.idSkillType },
         ],
       }));
+
+      console.log(newMission.missionSkillsTypeList);
     }
   };
 
@@ -185,70 +193,107 @@ export default function MissionView({
   });
 
   return (
-    <>
+    <Container className="py-4">
+      {/* === SECTION CREATION DE MISSION === */}
       {role === "ORGANIZATION" && (
-        <Row className="flex justify-content-center p-4">
-          <Card className="p-4 w-75 mb-4 yellow-border">
-            <Card.Header className="title yellow-border align-text-center">
-              Ajouter une mission
-            </Card.Header>
-            <Card.Body>
-              <Form className="flex align-item-center">
-                <Form.Group className="mb-3">
-                  <Form.Label>Titre</Form.Label>
-                  <Form.Control
-                    type="text"
+        <Row className="justify-content-center mb-4">
+          <Col xs={12} lg={10} xl={8}>
+            <Card className="shadow-sm">
+              <Card.Header className="title text-center">
+                <i className="fa fa-plus-circle me-2"></i>
+                Créer une nouvelle mission
+              </Card.Header>
+              <Card.Body className="p-4">
+                {/* Informations générales */}
+                <div className="form-section">
+                  <h6 className="profile-info-label mb-3">
+                    <i className="fa fa-info-circle me-2"></i>
+                    Informations générales
+                  </h6>
+
+                  <FormGroupRow
+                    label="Titre de la mission"
                     name="title"
+                    type="text"
                     value={newMission.title}
                     onChange={handleInputChange}
+                    placeholder="Ex: Distribution alimentaire..."
+                    icon="fa-tag"
+                    error={formErrors.title}
                   />
-                  {renderError("title")}
-                </Form.Group>
 
-                <Form.Group className="mb-3">
-                  <Form.Label>Description</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    name="description"
-                    value={newMission.description}
-                    onChange={handleInputChange}
-                  />
-                  {renderError("description")}
-                </Form.Group>
-
-                <Form.Group className="mb-3">
-                  <Form.Label>Nombre de bénévoles recherchés</Form.Label>
-                  <Form.Control
-                    type="number"
-                    name="numberVolunteerSearch"
-                    value={newMission.numberVolunteerSearch}
-                    min={1}
-                    max={100}
-                    onChange={handleInputChange}
-                  />
-                  {renderError("numberVolunteerSearch")}
-                </Form.Group>
-
-                <Form.Group className="mb-3">
-                  <Form.Label>Compétences recherchées</Form.Label>
-                  <div className="mb-2 badge">
-                    {newMission.missionSkillsTypeList.map((skill) => (
-                      <Badge bg="secondary" key={skill.id} className="me-2">
-                        {skill.label}{" "}
-                        <span
-                          style={{ cursor: "pointer" }}
-                          onClick={() => handleRemoveSkillType(skill.id)}
-                        >
-                          X
+                  <Row className="ps-3 pe-3 mb-3">
+                    <Col sm={3}>
+                      <output>Description</output>
+                    </Col>
+                    <Col sm={7}>
+                      <div className="input-group">
+                        <span className="input-group-text">
+                          <i className="fa fa-align-left"></i>
                         </span>
-                      </Badge>
-                    ))}
-                  </div>
-                  <Row>
-                    <Col>
+                        <Form.Control
+                          as="textarea"
+                          rows={3}
+                          name="description"
+                          value={newMission.description}
+                          onChange={handleInputChange}
+                          placeholder="Décrivez la mission et les tâches à accomplir..."
+                          isInvalid={!!formErrors.description}
+                        />
+                      </div>
+                      {formErrors.description && (
+                        <div className="text-danger mt-1">{formErrors.description}</div>
+                      )}
+                    </Col>
+                  </Row>
+
+                  <FormGroupRow
+                    label="Nombre de bénévoles"
+                    name="numberVolunteerSearch"
+                    type="number"
+                    value={newMission.numberVolunteerSearch}
+                    onChange={handleInputChange}
+                    placeholder="Ex: 5"
+                    icon="fa-users"
+                    min="1"
+                    max="100"
+                    error={formErrors.numberVolunteerSearch}
+                  />
+                </div>
+                <hr className="my-4" />
+
+                {/* Compétences requises */}
+                <div className="form-section">
+                  <h6 className="profile-info-label mb-3">
+                    <i className="fa fa-cogs me-2"></i>
+                    Compétences recherchées
+                  </h6>
+
+                  {newMission.missionSkillsTypeList.length > 0 && (
+                    <div className="mb-3">
+                      <small className="text-muted">Compétences sélectionnées :</small>
+                      <div className="mt-2">
+                        {newMission.missionSkillsTypeList.map((skill, index) => (
+                          <span
+                            key={`${skill.id}-${index}`}
+                            className="badge me-2 mb-2 p-2"
+                            style={{ cursor: "pointer" }}
+                            onClick={() => handleRemoveSkillType(skill.id)}
+                            title="Cliquez pour supprimer"
+                          >
+                            {skill.label} <i className="fa fa-times ms-1"></i>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  <Row className="ps-3 pe-3 mb-3">
+                    <Col sm={3}>
+                      <output>Ajouter une compétence</output>
+                    </Col>
+                    <Col sm={5}>
                       <Form.Select id="skillTypeSelect">
-                        <option value="">Choisir un type</option>
+                        <option value="">Choisir un type de compétence</option>
                         {skillTypes.map((skillType) => (
                           <option key={skillType.id} value={skillType.label}>
                             {skillType.label}
@@ -256,125 +301,181 @@ export default function MissionView({
                         ))}
                       </Form.Select>
                     </Col>
-                    <Col xs="auto">
+                    <Col sm={2}>
                       <Button
                         variant="outline-primary"
                         onClick={() => {
-                          const selectEl =
-                            document.getElementById("skillTypeSelect");
-                          handleAddSkillType(selectEl.value);
+                          const selectEl = document.getElementById("skillTypeSelect");
+                          if (selectEl.value) {
+                            handleAddSkillType(selectEl.value);
+                            selectEl.value = "";
+                          }
                         }}
                       >
                         Ajouter
                       </Button>
                     </Col>
                   </Row>
-                  s{renderError("missionSkillsTypeList")}
-                </Form.Group>
+                  {formErrors.missionSkillsTypeList && (
+                    <Row className="ps-3 pe-3">
+                      <Col sm={{ span: 7, offset: 3 }}>
+                        <div className="text-danger">{formErrors.missionSkillsTypeList}</div>
+                      </Col>
+                    </Row>
+                  )}
+                </div>
 
-                <Form.Group className="mb-3">
-                  <Form.Label>Adresse</Form.Label>
+                <hr className="my-4" />
+
+
+                {/* Localisation */}
+                <div className="form-section">
+                  <h6 className="profile-info-label mb-3">
+                    <i className="fa fa-map-marker-alt me-2"></i>
+                    Lieu de la mission
+                  </h6>
                   <AddressForm
                     ref={addressFormRef}
                     address={newMission.address}
                     onChange={handleAddressChange}
                   />
-                  {renderError("address")}
-                </Form.Group>
+                  {formErrors.address && (
+                    <div className="text-danger mt-2">{formErrors.address}</div>
+                  )}
+                </div>
 
-                <Form.Group className="mb-3">
-                  <Form.Label>Période</Form.Label>
-                  <Row>
+                <hr className="my-4" />
+
+                {/* Période */}
+                <div className="form-section">
+                  <h6 className="profile-info-label mb-3">
+                    <i className="fa fa-calendar me-2"></i>
+                    Période de la mission
+                  </h6>
+
+                  <Row className="g-3">
                     <Col md={6}>
-                      <Form.Label>Début</Form.Label>
-                      <Form.Control
-                        type="date"
-                        onChange={(e) =>
-                          handleDateTimeChange(
-                            "startDate",
-                            "date",
-                            e.target.value
-                          )
-                        }
-                      />
-                      <Form.Control
-                        type="time"
-                        className="mt-2"
-                        onChange={(e) =>
-                          handleDateTimeChange(
-                            "startDate",
-                            "time",
-                            e.target.value
-                          )
-                        }
-                      />
-                      {renderError("startDate")}
+                      <div className="mb-3">
+                        <label className="form-label">
+                          <i className="fa fa-play me-2"></i>
+                          Date et heure de début
+                        </label>
+                        <Form.Control
+                          type="date"
+                          className="mb-2"
+                          onChange={(e) => handleDateTimeChange("startDate", "date", e.target.value)}
+                          isInvalid={!!formErrors.startDate}
+                        />
+                        <Form.Control
+                          type="time"
+                          onChange={(e) => handleDateTimeChange("startDate", "time", e.target.value)}
+                          isInvalid={!!formErrors.startDate}
+                        />
+                        {formErrors.startDate && (
+                          <div className="text-danger mt-1">{formErrors.startDate}</div>
+                        )}
+                      </div>
                     </Col>
+
                     <Col md={6}>
-                      <Form.Label>Fin</Form.Label>
-                      <Form.Control
-                        type="date"
-                        onChange={(e) =>
-                          handleDateTimeChange(
-                            "endDate",
-                            "date",
-                            e.target.value
-                          )
-                        }
-                      />
-                      <Form.Control
-                        type="time"
-                        className="mt-2"
-                        onChange={(e) =>
-                          handleDateTimeChange(
-                            "endDate",
-                            "time",
-                            e.target.value
-                          )
-                        }
-                      />
-                      {renderError("endDate")}
+                      <div className="mb-3">
+                        <label className="form-label">
+                          <i className="fa fa-stop me-2"></i>
+                          Date et heure de fin
+                        </label>
+                        <Form.Control
+                          type="date"
+                          className="mb-2"
+                          onChange={(e) => handleDateTimeChange("endDate", "date", e.target.value)}
+                          isInvalid={!!formErrors.endDate}
+                        />
+                        <Form.Control
+                          type="time"
+                          onChange={(e) => handleDateTimeChange("endDate", "time", e.target.value)}
+                          isInvalid={!!formErrors.endDate}
+                        />
+                        {formErrors.endDate && (
+                          <div className="text-danger mt-1">{formErrors.endDate}</div>
+                        )}
+                      </div>
                     </Col>
                   </Row>
-                </Form.Group>
+                </div>
 
-                <div className="d-flex justify-content-center mt-3">
-                  <Button variant="primary" onClick={handleAddMission}>
-                    Ajouter la mission
+                <div className="text-center mt-4">
+                  <Button size="lg" onClick={handleAddMission}>
+                    Créer la mission
                   </Button>
                 </div>
-              </Form>
-            </Card.Body>
-          </Card>
+              </Card.Body>
+            </Card>
+          </Col>
         </Row>
       )}
 
-      <Row className="justify-content-center p-4">
-        <Form.Label>Filtrer les missions</Form.Label>
-        <Form.Select
-          className="w-25"
-          onChange={(e) => setFilterStatus(e.target.value)}
-        >
-          <option value="">Toutes les missions</option>
-          <option value="À venir">À venir</option>
-          <option value="En cours">En cours</option>
-          <option value="Terminée">Terminée</option>
-        </Form.Select>
+      {/* === SECTION LISTE DES MISSIONS === */}
+      <Row className="justify-content-center">
+        <Col xs={12} lg={10} xl={8}>
+          <Card className="shadow-sm">
+            <Card.Header className="title text-center">
+              <i className="fa fa-list me-2"></i>
+              {role === "ORGANIZATION" ? "Mes missions" : "Missions disponibles"}
+            </Card.Header>
+            <Card.Body className="p-4">
+              {/* Filtre */}
+              <div className="mb-4">
+                <Row className="align-items-center">
+                  <Col md={4}>
+                    <h6 className="profile-info-label mb-0">
+                      <i className="fa fa-filter me-2"></i>
+                      Filtrer par statut
+                    </h6>
+                  </Col>
+                  <Col md={4}>
+                    <Form.Select
+                      value={filterStatus}
+                      onChange={(e) => setFilterStatus(e.target.value)}
+                    >
+                      <option value="">Toutes les missions</option>
+                      <option value="À venir">À venir</option>
+                      <option value="En cours">En cours</option>
+                      <option value="Terminée">Terminée</option>
+                    </Form.Select>
+                  </Col>
+                  <Col md={4} className="text-end">
+                    <small className="text-muted">
+                      {filteredMissions.length} mission{filteredMissions.length > 1 ? 's' : ''} trouvée{filteredMissions.length > 1 ? 's' : ''}
+                    </small>
+                  </Col>
+                </Row>
+              </div>
 
-        {filteredMissions.length > 0 ? (
-          <Row xs={1} md={2} lg={3} className="g-4">
-            {filteredMissions.map((mission, index) => {
-              return (
-                <Col key={index}>
-                  <MissionCard mission={mission} />
-                </Col>
-              );
-            })}
-          </Row>
-        ) : (
-          <p>Aucune mission trouvée pour ce filtre.</p>
-        )}
+              <hr className="my-4" />
+
+              {/* Liste des missions */}
+              {filteredMissions.length > 0 ? (
+                <Row xs={1} md={2} lg={3} className="g-4">
+                  {filteredMissions.map((mission, index) => (
+                    <Col key={index}>
+                      <MissionCard mission={mission} />
+                    </Col>
+                  ))}
+                </Row>
+              ) : (
+                <div className="text-center py-5">
+                  <i className="fa fa-search fa-3x text-muted mb-3"></i>
+                  <p className="text-muted mb-0">
+                    {filterStatus
+                      ? `Aucune mission "${filterStatus.toLowerCase()}" trouvée`
+                      : "Aucune mission disponible pour le moment"
+                    }
+                  </p>
+                </div>
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
       </Row>
-    </>
+    </Container>
   );
 }

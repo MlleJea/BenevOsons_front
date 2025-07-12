@@ -43,12 +43,6 @@ export default function LocationSearch({
   useEffect(() => {
     const radiusValid = radiusKm && !isNaN(radiusKm) && radiusKm > 0;
 
-    console.log("=== DEBUG LOCATION SEARCH ===");
-    console.log("selectedAddress:", selectedAddress, "typeof:", typeof selectedAddress);
-    console.log("userAddresses:", userAddresses);
-    console.log("searchType:", searchType);
-    console.log("radiusKm:", radiusKm, "radiusValid:", radiusValid);
-
     let locationData = {
       type: searchType,
       postalCode,

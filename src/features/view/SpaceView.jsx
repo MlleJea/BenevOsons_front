@@ -92,25 +92,34 @@ export default function SpaceView({
       if (phoneError) newErrors.phoneNumber = phoneError;
     }
 
-    if (profilFields.password) {
-      const passwordError = validatePassword(profilFields.password);
-      if (passwordError) newErrors.password = passwordError;
-
-      const confirmError = validateConfirmPassword(
-        profilFields.password,
-        profilFields.passwordConfirmation
-      );
-      if (confirmError) newErrors.passwordConfirmation = confirmError;
+    // Validation du mot de passe et confirmation
+    if (profilFields.password || profilFields.passwordConfirmation) {
+      // Vérifie que les deux sont remplis
+      if (!profilFields.password) {
+        newErrors.password = "Le mot de passe est requis.";
+      } else {
+        const passwordError = validatePassword(profilFields.password);
+        if (passwordError) newErrors.password = passwordError;
+      }
+      if (!profilFields.passwordConfirmation) {
+        newErrors.passwordConfirmation = "La confirmation est requise.";
+      } else {
+        const confirmError = validateConfirmPassword(
+          profilFields.password,
+          profilFields.passwordConfirmation
+        );
+        if (confirmError) newErrors.passwordConfirmation = confirmError;
+      }
     }
 
     //  Validation d'adresse si l'adresse a été modifiée
     const addressChanged =
       profilFields.addressList.streetNumber !==
-        initialValues.addressList.streetNumber ||
+      initialValues.addressList.streetNumber ||
       profilFields.addressList.streetName !==
-        initialValues.addressList.streetName ||
+      initialValues.addressList.streetName ||
       profilFields.addressList.postalCode !==
-        initialValues.addressList.postalCode ||
+      initialValues.addressList.postalCode ||
       profilFields.addressList.city !== initialValues.addressList.city;
 
     if (

@@ -18,7 +18,7 @@ export default function SearchView({
     skillType: "",
     startDate: "",
     endDate: "",
-    useEndDate: false, // Nouveau champ pour contrôler l'affichage
+    useEndDate: false, 
     location: {
       type: "",
       postalCode: "",
@@ -93,7 +93,8 @@ export default function SearchView({
           "Les dates de début et de fin ne sont pas valides. Veuillez vérifier."
         );
         return;
-        }
+      }
+    }
 
     if (!hasSkillType && !hasStartDate && !hasEndDate && !hasLocation) {
       showErrorModal("Veuillez entrer au moins un critère de recherche");
@@ -267,7 +268,6 @@ export default function SearchView({
                 variant="outline-secondary"
                 size="md"
                 onClick={handleReset}
-                isValid={validate}
                 className="px-4"
               >
                 Réinitialiser les filtres
@@ -317,3 +317,5 @@ export default function SearchView({
     </Container>
   );
 }
+
+

@@ -112,10 +112,6 @@ const AddressForm = forwardRef(({
                       <i className="fa fa-edit me-1"></i>
                       <span className="d-none d-sm-inline">Modifier</span>
                     </Button>
-                    <Button size="sm" variant="outline-danger" onClick={onDelete}>
-                      <i className="fa fa-trash me-1"></i>
-                      <span className="d-none d-sm-inline">Supprimer</span>
-                    </Button>
                   </div>
                 </Col>
               )}

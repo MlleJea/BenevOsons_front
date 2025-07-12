@@ -15,7 +15,7 @@ import {
   updateMissionDateTime,
 } from "@utils/formatDate";
 import { getMissionStatus } from "../../utils/missionUtils";
-import { validateMissionDates } from "../../utils/missionValidation";
+import { validateMissionDates } from "../../utils/validationUtils";
 
 export default function MissionView({
   addMission,

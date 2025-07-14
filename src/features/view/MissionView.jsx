@@ -419,7 +419,7 @@ export default function MissionView({
           <Card className="shadow-sm">
             <Card.Header className="title text-center">
               <i className="fa fa-list me-2"></i>
-              {role === "ORGANIZATION" ? "Mes missions" : "Missions disponibles"}
+              Mes missions
             </Card.Header>
             <Card.Body className="p-4">
               {/* Filtre */}

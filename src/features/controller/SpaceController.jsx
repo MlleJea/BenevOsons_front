@@ -57,38 +57,38 @@ export default function SpaceController() {
     }, [id, token, role]);
 
     const updateUser = async (updatedFields) => {
-    const requestOptionsUpdate = {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(updatedFields),
-    };
+        const requestOptionsUpdate = {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(updatedFields),
+        };
 
-    try {
-        const response = await fetch(`${backUrl}/space/update/${id}`, requestOptionsUpdate);
+        try {
+            const response = await fetch(`${backUrl}/space/update/${id}`, requestOptionsUpdate);
 
-        let data;
-        const contentType = response.headers.get("content-type");
-        if (contentType && contentType.includes("application/json")) {
-            data = await response.json();
-        } else {
-            data = await response.text();
+            let data;
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+                data = await response.json();
+            } else {
+                data = await response.text();
+            }
+
+            if (!response.ok) throw new Error(data);
+
+            setModalMessage("Modifications enregistrées !");
+            setShowModal(true);
+            return { success: true, message: data };
+        } catch (error) {
+            console.error("Erreur update :", error);
+            setModalMessage("Erreur lors de la modification.");
+            setShowModal(true);
+            return { success: false };
         }
-
-        if (!response.ok) throw new Error(data);
-
-        setModalMessage("Modifications enregistrées !");
-        setShowModal(true);
-        return { success: true, message: data };
-    } catch (error) {
-        console.error("Erreur update :", error);
-        setModalMessage("Erreur lors de la modification.");
-        setShowModal(true);
-        return { success: false };
-    }
-};
+    };
 
     const addSkill = (skillToAdd) => {
         const requestOptionAddSkill = {
@@ -119,6 +119,44 @@ export default function SpaceController() {
             });
     };
 
+    const deleteSkill = async (skillToDelete) => {
+        if (!skillToDelete?.idSkill) {
+            console.error("Skill sans ID:", skillToDelete);
+            setModalMessage("Erreur: cette compétence n'a pas d'identifiant.");
+            setShowModal(true);
+            return Promise.resolve({ success: false });
+        }
+
+        try {
+            const response = await fetch(`${backUrl}/space/deleteSkill/${skillToDelete.idSkill}`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+            );
+            if (!response.ok) {
+                throw new Error(`Erreur HTTP ${response.status}`);
+            }
+
+            setSkillToDisplay((prev) =>
+                prev.filter((skill) => skill.idSkill !== skillToDelete.idSkill)
+            );
+
+            setModalMessage("Compétence supprimée avec succès !");
+            setShowModal(true);
+            return { success: true };
+
+        } catch (error) {
+            console.error("Erreur deleteSkill :", error);
+            setModalMessage("Erreur lors de la suppression de la compétence.");
+            setShowModal(true);
+            return { success: false };
+        }
+    };
+
+
     return (
         <>
             <SpaceView
@@ -130,6 +168,7 @@ export default function SpaceController() {
                 skillTypes={skillTypes}
                 grades={grades}
                 id={id}
+                deleteSkill={deleteSkill}
             />
             {showModal && (
                 <PopupModal message={modalMessage} onClose={() => setShowModal(false)} />

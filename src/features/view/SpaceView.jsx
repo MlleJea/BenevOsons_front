@@ -328,6 +328,13 @@ export default function SpaceView({
                   Enregistrer les modifications
                 </Button>
               </div>
+              <a
+                href="mailto:Benevosons@gmail.com"
+                style={{ fontSize: '12px' }}
+              >
+                Je souhaite supprimer mon profil ? J'envoie un mail à
+                Benevosons@gmail.com
+              </a>
             </Card.Body>
           </Card>
         </Col>
